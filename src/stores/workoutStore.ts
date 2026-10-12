@@ -2,6 +2,19 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { WorkoutExercise, WorkoutSession, WorkoutSet } from '../types';
 
+/** Типы травм пользователя для фильтрации небезопасных упражнений. */
+export type InjuryType = 'shoulder' | 'knee' | 'lowerBack';
+
+/** Набор флагов травм пользователя. */
+export interface UserInjuries {
+  /** Травма плеча. */
+  shoulder: boolean;
+  /** Травма колена. */
+  knee: boolean;
+  /** Травма поясницы. */
+  lowerBack: boolean;
+}
+
 /**
  * Zustand store активной тренировки.
  * Состояние сохраняется в localStorage (middleware persist),
@@ -31,6 +44,8 @@ export interface WorkoutState {
   defaultRestTime: number;
   /** Метка времени начала текущего отдыха (мс) или null. */
   restStartedAt: number | null;
+  /** Флаги травм пользователя — влияют на подсветку небезопасных упражнений. */
+  userInjuries: UserInjuries;
 
   /** Начинает новую тренировку: фиксирует время старта. */
   startWorkout: () => void;
@@ -50,6 +65,8 @@ export interface WorkoutState {
   adjustRestTime: (delta: number) => void;
   /** Досрочно завершает текущий отдых. */
   skipRest: () => void;
+  /** Переключает флаг травмы пользователя (плечо / колено / поясница). */
+  toggleInjury: (type: InjuryType) => void;
   /** Обновляет прошедшее время тренировки (вызывается из useWorkoutTimer). */
   setElapsedSec: (sec: number) => void;
 }
@@ -80,6 +97,7 @@ const initialState = {
   restTimeLeftSec: DEFAULT_REST_TIME,
   defaultRestTime: DEFAULT_REST_TIME,
   restStartedAt: null as number | null,
+  userInjuries: { shoulder: false, knee: false, lowerBack: false } as UserInjuries,
 };
 
 /** Хелпер: применяет мутацию к упражнению с заданным exerciseId. */
@@ -207,6 +225,12 @@ export const useWorkoutStore = create<WorkoutState>()(
 
       skipRest: () => {
         set({ isResting: false, restStartedAt: null, restTimeLeftSec: get().defaultRestTime });
+      },
+
+      toggleInjury: (type: InjuryType) => {
+        const { userInjuries } = get();
+        // Инвертируем выбранный флаг травмы, остальные сохраняем.
+        set({ userInjuries: { ...userInjuries, [type]: !userInjuries[type] } });
       },
 
       setElapsedSec: (sec: number) => {
