@@ -1,0 +1,14 @@
+/* Tailwind CSS v4: подключение через CSS-first конфигурацию */
+@import "tailwindcss";
+
+/* Базовые стили тёмной темы приложения */
+html {
+  color-scheme: dark;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background-color: var(--color-slate-900);
+  -webkit-tap-highlight-color: transparent;
+}
