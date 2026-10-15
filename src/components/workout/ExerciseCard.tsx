@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import type { Exercise, MuscleGroup, WorkoutExercise, WorkoutSet } from '../../types';
-import type { UserInjuries } from '../../stores/workoutStore';
+import type { Exercise, MuscleGroup, UserInjuries, WorkoutExercise, WorkoutSet } from '../../types';
 import { muscleGroupLabels } from '../../utils/labels';
+import { isExerciseSafe } from '../../utils/exerciseFilter';
+import { InjuryWarning } from '../ui/InjuryWarning';
 
 /** Пропсы карточки упражнения в активной тренировке. */
 export interface ExerciseCardProps {
@@ -19,6 +20,8 @@ export interface ExerciseCardProps {
   onRemove: (exerciseId: string) => void;
   /** Типы травм пользователя — подсвечивают небезопасные для него упражнения. */
   userInjuries: UserInjuries;
+  /** Полный справочник — передаётся в InjuryWarning для показа альтернатив. */
+  allExercises?: Exercise[];
 }
 
 /** Иконка-эмодзи для группы мышц. */
@@ -58,16 +61,14 @@ export function ExerciseCard({
   onCompleteSet,
   onRemove,
   userInjuries,
+  allExercises,
 }: ExerciseCardProps) {
   /** Локальные «строковые» значения полей ввода (нужны для пустого поля и десятичных кг). */
   const [weightDrafts, setWeightDrafts] = useState<Record<string, string>>({});
   const [repsDrafts, setRepsDrafts] = useState<Record<string, string>>({});
 
-  // Определяем опасное для пользователя упражнение по всем включённым травмам.
-  const isUnsafeForUser =
-    (userInjuries.shoulder && !exercise.isShoulderSafe) ||
-    (userInjuries.knee && !exercise.isKneeSafe) ||
-    (userInjuries.lowerBack && !exercise.isLowerBackSafe);
+  // Определяем опасное для пользователя упражнение через общий фильтр травм.
+  const isUnsafeForUser = !isExerciseSafe(exercise, userInjuries);
 
   /** Текущее отображаемое значение веса: черновик, если пользователь редактирует, иначе число. */
   const weightDisplay = (workoutSet: WorkoutSet): string =>
@@ -138,6 +139,13 @@ export function ExerciseCard({
           🗑️
         </button>
       </header>
+
+      {/* Предупреждение о небезопасном упражнении + альтернативы (ничего не рендерит, если безопасно) */}
+      {isUnsafeForUser && (
+        <div className="mb-3">
+          <InjuryWarning exercise={exercise} injuries={userInjuries} allExercises={allExercises} />
+        </div>
+      )}
 
       {/* Таблица подходов */}
       <table className="w-full border-collapse text-left">

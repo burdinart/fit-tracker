@@ -1,19 +1,10 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { WorkoutExercise, WorkoutSession, WorkoutSet } from '../types';
+import type { UserInjuries, WorkoutExercise, WorkoutSession, WorkoutSet } from '../types';
+import { useUserStore, getInjuriesFromProfile } from './userStore';
 
 /** Типы травм пользователя для фильтрации небезопасных упражнений. */
 export type InjuryType = 'shoulder' | 'knee' | 'lowerBack';
-
-/** Набор флагов травм пользователя. */
-export interface UserInjuries {
-  /** Травма плеча. */
-  shoulder: boolean;
-  /** Травма колена. */
-  knee: boolean;
-  /** Травма поясницы. */
-  lowerBack: boolean;
-}
 
 /**
  * Zustand store активной тренировки.
@@ -68,6 +59,8 @@ export interface WorkoutState {
   skipRest: () => void;
   /** Переключает флаг травмы пользователя (плечо / колено / поясница). */
   toggleInjury: (type: InjuryType) => void;
+  /** Полная синхронизация derived-полей (травмы + отдых по умолчанию) с профилем из userStore. */
+  syncWithProfile: () => void;
 }
 
 /** Генерация короткого уникального идентификатора для подхода. */
@@ -97,6 +90,19 @@ const initialState = {
   restStartedAt: null as number | null,
   userInjuries: { shoulder: false, knee: false, lowerBack: false } as UserInjuries,
 };
+
+/**
+ * Синхронизирует derived-состояние workoutStore с профилем пользователя:
+ * травмы — копия из userStore (источник истины — SettingsPage),
+ * отдых по умолчанию — значение из профиля.
+ */
+function syncFromProfile(): Pick<WorkoutState, 'userInjuries' | 'defaultRestTime'> {
+  const profile = useUserStore.getState().profile;
+  return {
+    userInjuries: getInjuriesFromProfile(profile),
+    defaultRestTime: Math.max(MIN_REST_TIME, profile.defaultRestTime),
+  };
+}
 
 /** Хелпер: применяет мутацию к упражнению с заданным exerciseId. */
 function mapExercise(
@@ -137,6 +143,8 @@ export const useWorkoutStore = create<WorkoutState>()(
           currentExercises: [],
           isResting: false,
           restStartedAt: null,
+          // На старт подтягиваем актуальные настройки из профиля (отдых, травмы).
+          ...syncFromProfile(),
         });
       },
 
@@ -229,9 +237,23 @@ export const useWorkoutStore = create<WorkoutState>()(
         // Инвертируем выбранный флаг травмы, остальные сохраняем.
         set({ userInjuries: { ...userInjuries, [type]: !userInjuries[type] } });
       },
+
+      /** Полная синхронизация derived-полей (травмы + отдых) с профилем из userStore. */
+      syncWithProfile: () => {
+        set(syncFromProfile());
+      },
     }),
     {
       name: 'fit-tracker-workout',
     },
   ),
 );
+
+// Источник истины по травмам и отдыху — профиль пользователя (userStore).
+// При любом изменении профиля обновляем derived-состояние workoutStore,
+// чтобы фильтрация упражнений мгновенно реагировала на настройки.
+useUserStore.subscribe((state, prevState) => {
+  if (state.profile !== prevState.profile) {
+    useWorkoutStore.getState().syncWithProfile();
+  }
+});

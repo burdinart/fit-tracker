@@ -88,6 +88,19 @@ export interface WorkoutSession {
 /** Единицы измерения веса. */
 export type WeightUnits = 'kg' | 'lbs';
 
+/** Клавиша травмы, соответствующая флагам UserProfile. */
+export type InjuryKey = 'hasShoulderInjury' | 'hasKneeInjury' | 'hasLowerBackInjury';
+
+/** Набор активных травм пользователя (используется для фильтрации упражнений). */
+export interface UserInjuries {
+  /** Травма плеча. */
+  shoulder: boolean;
+  /** Травма колена. */
+  knee: boolean;
+  /** Травма поясницы. */
+  lowerBack: boolean;
+}
+
 /** Профиль пользователя с параметрами ограничений и настроек. */
 export interface UserProfile {
   /** Уникальный идентификатор пользователя. */
