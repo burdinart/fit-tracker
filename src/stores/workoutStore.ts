@@ -191,10 +191,19 @@ export const useWorkoutStore = create<WorkoutState>()(
       ...initialState,
 
       startWorkout: () => {
+        const { currentExercises } = get();
+        // Защита от «пустого старта»: если на экране выбора не добавлено ни одного
+        // упражнения, тренировку не начинаем — иначе пользователь попадал на экран
+        // с надписью «Нет упражнений» вместо активной тренировки.
+        if (currentExercises.length === 0) {
+          return;
+        }
         set({
           isWorkoutActive: true,
           sessionStartTime: Date.now(),
-          currentExercises: [],
+          // ВАЖНО: текущий набор упражнений сохраняем (не сбрасываем в []) —
+          // именно сброс вызывал баг «Начать тренировку → Нет упражнений».
+          currentExercises,
           isResting: false,
           restStartedAt: null,
           // На старт подтягиваем актуальные настройки из профиля (отдых, травмы).

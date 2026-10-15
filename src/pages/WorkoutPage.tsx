@@ -261,10 +261,16 @@ export function WorkoutPage({ exercises }: WorkoutPageProps) {
           {/* Большая фиксированная кнопка старта */}
           <div className="fixed inset-x-0 bottom-14 border-t border-slate-800 bg-slate-900/95 px-4 py-4 backdrop-blur">
             <div className="mx-auto max-w-lg">
+              {addedIds.size === 0 && (
+                <p className="mb-2 text-center text-sm text-amber-400">
+                  Сначала добавьте упражнения кнопкой «+»
+                </p>
+              )}
               <button
                 type="button"
                 onClick={startWorkout}
-                className="min-h-[56px] w-full rounded-xl bg-emerald-600 text-xl font-bold text-white transition hover:bg-emerald-500 active:scale-[0.99]"
+                disabled={addedIds.size === 0}
+                className="min-h-[56px] w-full rounded-xl bg-emerald-600 text-xl font-bold text-white transition hover:bg-emerald-500 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-40 disabled:active:scale-100"
               >
                 Начать тренировку{addedIds.size > 0 ? ` (${addedIds.size})` : ''}
               </button>
