@@ -12,6 +12,7 @@ import {
 type SessionInsert = Database['public']['Tables']['workout_sessions']['Insert'];
 type SetInsert = Database['public']['Tables']['workout_sets']['Insert'];
 import { addToQueue } from '../services/syncQueue';
+import { generateUUID, isValidUUID } from '../utils/uuid';
 
 /** Типы травм пользователя для фильтрации небезопасных упражнений. */
 export type InjuryType = 'shoulder' | 'knee' | 'lowerBack';
@@ -87,10 +88,13 @@ export function buildCloudPayload(userId: string, session: WorkoutSession): {
   sessionRow: SessionInsert;
   setRows: SetInsert[];
 } {
+  // Защита от старых не-UUID id (session-xxx / set-xxx) из localStorage и очереди:
+  // PostgreSQL требует uuid, иначе вставка падает с "Invalid input syntax for type uuid".
+  const sessionId = isValidUUID(session.id) ? session.id : generateUUID();
   // Строка сессии для таблицы workout_sessions.
   const sessionRow: SessionInsert = {
-    id: session.id,
-    user_id: userId,
+    id: sessionId,
+    user_id: userId, // UUID из auth.users (supabase.auth.getUser()), а не произвольная строка
     started_at: new Date(session.date).toISOString(),
     duration_sec: session.durationSec,
     completed: session.completed,
@@ -98,8 +102,8 @@ export function buildCloudPayload(userId: string, session: WorkoutSession): {
   // Подходы: по одному на выполненный подход, порядок внутри упражнения — по индексу.
   const setRows: SetInsert[] = session.exercises.flatMap((exercise) =>
     exercise.sets.map((workoutSet, index): SetInsert => ({
-      id: workoutSet.id,
-      session_id: session.id,
+      id: isValidUUID(workoutSet.id) ? workoutSet.id : generateUUID(),
+      session_id: sessionId,
       exercise_id: exercise.exerciseId,
       weight: workoutSet.weight,
       reps: workoutSet.reps,
@@ -113,9 +117,9 @@ export function buildCloudPayload(userId: string, session: WorkoutSession): {
   return { sessionRow, setRows };
 }
 
-/** Генерация короткого уникального идентификатора для подхода. */
+/** Генерация идентификатора подхода — UUID v4 (колонка workout_sets.id имеет тип uuid). */
 function generateId(): string {
-  return `set-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+  return generateUUID();
 }
 
 /** Создаёт пустой подход с весом/повторами по нулям и плановым отдыхом. */
@@ -204,7 +208,9 @@ export const useWorkoutStore = create<WorkoutState>()(
         // Длительность считаем от меток времени, с защитой от отрицательного значения.
         const durationSec = Math.max(0, Math.floor((Date.now() - startTime) / 1000));
         const session: WorkoutSession = {
-          id: `session-${startTime.toString(36)}`,
+          // id сессии — UUID v4: колонка workout_sessions.id имеет тип uuid,
+          // старые строки вида "session-xxx" ломали вставку в PostgreSQL.
+          id: generateUUID(),
           date: startTime,
           durationSec,
           exercises: currentExercises,
