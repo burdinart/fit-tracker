@@ -1,0 +1,10 @@
+// Отдельный конфиг для Service Worker: типы WebWorker вместо DOM.
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "lib": ["ES2022", "WebWorker", "DOM.Iterable"],
+    "types": []
+  },
+  "include": ["src/sw.ts"],
+  "exclude": []
+}

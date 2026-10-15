@@ -5,6 +5,7 @@ import { useUserStore } from '../stores/userStore';
 import { getSafeExercises } from '../utils/exerciseFilter';
 import { mockExercises } from '../data/mockExercises';
 import { Toggle } from '../components/ui/Toggle';
+import { subscribeForPush, unsubscribeFromPush } from '../services/pushService';
 
 /** Описание одного toggle-переключателя травмы. */
 interface InjuryToggleConfig {
@@ -44,6 +45,47 @@ export function SettingsPage() {
   const [restDraft, setRestDraft] = useState(String(profile.defaultRestTime));
   // Флаг «есть несохранённые изменения» и сообщение об успешном сохранении.
   const [savedAt, setSavedAt] = useState<number | null>(null);
+
+  // Состояние подписки на push-уведомления («Напоминания о тренировках»).
+  const [pushEnabled, setPushEnabled] = useState(false);
+  const [pushBusy, setPushBusy] = useState(false);
+  const [pushError, setPushError] = useState<string | null>(null);
+
+  // При открытии настроек проверяем текущее состояние подписки браузера.
+  useEffect(() => {
+    if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
+    void (async () => {
+      try {
+        const registration = await navigator.serviceWorker.getRegistration(
+          `${import.meta.env.BASE_URL}sw.js`,
+        );
+        const subscription = await registration?.pushManager.getSubscription();
+        setPushEnabled(subscription !== null && subscription !== undefined);
+      } catch {
+        // Не критично: просто не покажем активную подписку.
+      }
+    })();
+  }, []);
+
+  /** Переключатель напоминаний: при включении запрашивает разрешение и подписывает браузер. */
+  const handlePushToggle = async (): Promise<void> => {
+    if (pushBusy) return;
+    setPushBusy(true);
+    setPushError(null);
+    try {
+      if (pushEnabled) {
+        await unsubscribeFromPush();
+        setPushEnabled(false);
+      } else {
+        await subscribeForPush(); // внутри: Notification.requestPermission() + подписка + запись в Supabase
+        setPushEnabled(true);
+      }
+    } catch (error) {
+      setPushError(error instanceof Error ? error.message : 'Не удалось изменить настройку.');
+    } finally {
+      setPushBusy(false);
+    }
+  };
 
   // Синхронизируем черновик, если профиль изменился извне (например, другая вкладка).
   useEffect(() => {
@@ -181,6 +223,28 @@ export function SettingsPage() {
               </>
             )}
           </p>
+        </section>
+
+        {/* Карточка: напоминания о тренировках (Web Push) */}
+        <section className="rounded-2xl border border-slate-800 bg-slate-800/60 p-4">
+          <h2 className="mb-1 text-sm font-semibold uppercase tracking-wide text-slate-400">
+            Уведомления
+          </h2>
+          <Toggle
+            name="pushReminders"
+            label="Напоминания о тренировках"
+            description="Push-уведомления, если пропущен запланированный день тренировки. При включении браузер запросит разрешение на уведомления."
+            checked={pushEnabled}
+            onChange={() => void handlePushToggle()}
+          />
+          {pushBusy && (
+            <p className="mt-2 text-xs text-slate-400">Сохраняем настройку…</p>
+          )}
+          {pushError !== null && (
+            <p className="mt-2 rounded-xl border border-rose-800 bg-rose-950/40 px-3 py-2 text-xs text-rose-300">
+              {pushError}
+            </p>
+          )}
         </section>
 
         {/* Сообщение о сохранении */}

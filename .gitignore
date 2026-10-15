@@ -8,3 +8,7 @@ dist/
 .env
 .env.*
 !.env.example
+
+# Генерируемые при сборке артефакты PWA (создаются scripts/generate-sw.mjs и postbuild)
+public/sw.js
+public/icons/

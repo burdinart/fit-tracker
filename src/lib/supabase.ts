@@ -177,6 +177,13 @@ export interface Database {
         };
         Relationships: [];
       };
+      // Push-подписки (Web Push). Таблица создается SQL-миграцией; типы свободные.
+      push_subscriptions: {
+        Row: Record<string, unknown>;
+        Insert: Record<string, unknown>;
+        Update: Record<string, unknown>;
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;

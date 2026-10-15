@@ -1,8 +1,26 @@
-import { useEffect, useState } from 'react';
-import { WorkoutPage } from './pages/WorkoutPage';
-import { HistoryPage } from './pages/HistoryPage';
-import { SettingsPage } from './pages/SettingsPage';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import { AuthPage } from './pages/AuthPage';
+
+// Ленивая загрузка основных вкладок: отдельные чанки (code splitting) —
+// на первом экране грузится только авторизация + активная вкладка.
+const WorkoutPage = lazy(() =>
+  import('./pages/WorkoutPage').then((m) => ({ default: m.WorkoutPage })),
+);
+const HistoryPage = lazy(() =>
+  import('./pages/HistoryPage').then((m) => ({ default: m.HistoryPage })),
+);
+const SettingsPage = lazy(() =>
+  import('./pages/SettingsPage').then((m) => ({ default: m.SettingsPage })),
+);
+
+/** Простой спиннер для Suspense (тёмная тема приложения). */
+function PageLoader() {
+  return (
+    <div className="flex min-h-[60dvh] items-center justify-center text-slate-400">
+      <div className="animate-pulse text-lg">Загрузка…</div>
+    </div>
+  );
+}
 import { BottomNav } from './components/layout/BottomNav';
 import type { TabId } from './components/layout/BottomNav';
 import { useAuthStore } from './stores/authStore';
@@ -69,13 +87,15 @@ function App() {
 
   return (
     <>
-      {activeTab === 'workout' ? (
-        <WorkoutPage exercises={exercises} />
-      ) : activeTab === 'history' ? (
-        <HistoryPage exercises={exercises} />
-      ) : (
-        <SettingsPage />
-      )}
+      <Suspense fallback={<PageLoader />}>
+        {activeTab === 'workout' ? (
+          <WorkoutPage exercises={exercises} />
+        ) : activeTab === 'history' ? (
+          <HistoryPage exercises={exercises} />
+        ) : (
+          <SettingsPage />
+        )}
+      </Suspense>
       <BottomNav activeTab={activeTab} onChange={setActiveTab} />
     </>
   );
