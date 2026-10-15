@@ -96,8 +96,28 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         options: { data: { name: name.trim() } },
       });
       if (error) throw error;
-      // Если подтверждение email включено — пользователь ещё не «вошёл».
+      // Если подтверждение email включено — пользователь ещё не «вошёл»
+      // (session === null). Создаём строку профиля заранее: при RLS-политике
+      // «только свой профиль» анонимный upsert будет отклонён, но это не критично —
+      // после подтверждения email при первом входе fetchProfile() создаст профиль сам.
       if (!data.session) {
+        if (data.user) {
+          try {
+            const newProfile: ProfileInsert = {
+              id: data.user.id,
+              email: data.user.email ?? null,
+              name: name.trim() || null,
+              has_shoulder_injury: false,
+              has_knee_injury: false,
+              has_lower_back_injury: false,
+              default_rest_time: 90,
+              units: 'kg',
+            };
+            await supabase.from('profiles').upsert(newProfile);
+          } catch (error) {
+            console.error('[authStore] Не удалось создать профиль при регистрации:', error);
+          }
+        }
         return { error: null, requireConfirmation: true };
       }
       set({ user: data.user ?? null });

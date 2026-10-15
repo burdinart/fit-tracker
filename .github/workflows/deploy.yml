@@ -36,6 +36,12 @@ jobs:
         run: npm ci
 
       - name: Сборка (tsc + vite build)
+        # Секреты Supabase прокидываются как VITE_-переменные (иначе прод-сборка
+        # соберётся с placeholder-значениями). Значения по умолчанию не секретные —
+        # anon-ключ публичный и всё равно попадает в бандл.
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.SUPABASE_URL || 'https://bacivvohmpeqkydjzvcy.supabase.co' }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJhY2l2dm9obXBlcWt5ZGp6dmN5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIwNzQzMzYsImV4cCI6MjEwNzY1MDMzNn0.NNMuT3gv2EvQYZdrCW6zLMTKZ_hWdyMmaCLZ96Jq4f0' }}
         run: npm run build
 
       - name: Настройка Pages
