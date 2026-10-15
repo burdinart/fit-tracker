@@ -200,7 +200,7 @@ export function WorkoutPage({ exercises }: WorkoutPageProps) {
                 onUpdateSet={updateSet}
                 onCompleteSet={completeSet}
                 onRemove={removeExercise}
-                hasShoulderInjury={userInjuries.shoulder}
+                userInjuries={userInjuries}
               />
             );
           })
