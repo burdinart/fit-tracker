@@ -407,15 +407,17 @@ export function WorkoutPage({ exercises }: WorkoutPageProps) {
         )}
       </section>
 
-      {/* Таймер отдыха появляется внизу экрана после завершения подхода */}
-      {isResting && (
-        <RestTimer
-          remainingSec={remainingSec}
-          isFinished={isFinished}
-          onSkip={skipRest}
-          onAdjust={adjustRestTime}
-        />
-      )}
+      {/* Отступ, чтобы последний подход не перекрывался фиксированным таймером отдыха */}
+      {isResting && <div className="h-64 shrink-0" aria-hidden="true" />}
+
+      {/* Таймер отдыха — фиксированная плашка внизу экрана, активна после завершения подхода */}
+      <RestTimer
+        timeLeft={remainingSec}
+        isActive={isResting}
+        isFinished={isFinished}
+        onSkip={skipRest}
+        onAdjust={adjustRestTime}
+      />
     </main>
   );
 }
