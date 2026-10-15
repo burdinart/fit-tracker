@@ -260,6 +260,7 @@ export const useWorkoutStore = create<WorkoutState>()(
       completeSet: (exerciseId: string, setId: string) => {
         const now = Date.now();
         const { defaultRestTime } = get();
+        // Повторное нажатие ✓ на уже выполненном подходе — только перезапуск отдыха.
         set({
           currentExercises: mapSet(get().currentExercises, exerciseId, setId, (workoutSet) => ({
             ...workoutSet,

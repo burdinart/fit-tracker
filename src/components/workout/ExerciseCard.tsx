@@ -176,8 +176,7 @@ export function ExerciseCard({
                   step={0.5}
                   value={weightDisplay(workoutSet)}
                   onChange={(event) => handleWeightChange(workoutSet, event.target.value)}
-                  disabled={workoutSet.isCompleted}
-                  className="min-w-[80px] rounded-lg border border-slate-600 bg-slate-900 px-2 py-3 text-2xl tabular-nums text-slate-100 outline-none focus:border-emerald-500 disabled:opacity-50"
+                  className="w-20 text-2xl py-2 bg-slate-800 rounded text-center tabular-nums text-slate-100 outline-none focus:ring-2 focus:ring-emerald-500"
                   aria-label={`Вес, подход ${index + 1}`}
                 />
               </td>
@@ -189,8 +188,7 @@ export function ExerciseCard({
                   step={1}
                   value={repsDisplay(workoutSet)}
                   onChange={(event) => handleRepsChange(workoutSet, event.target.value)}
-                  disabled={workoutSet.isCompleted}
-                  className="min-w-[80px] rounded-lg border border-slate-600 bg-slate-900 px-2 py-3 text-2xl tabular-nums text-slate-100 outline-none focus:border-emerald-500 disabled:opacity-50"
+                  className="w-20 text-2xl py-2 bg-slate-800 rounded text-center tabular-nums text-slate-100 outline-none focus:ring-2 focus:ring-emerald-500"
                   aria-label={`Повторы, подход ${index + 1}`}
                 />
               </td>
@@ -198,7 +196,6 @@ export function ExerciseCard({
                 <button
                   type="button"
                   onClick={() => onCompleteSet(exercise.id, workoutSet.id)}
-                  disabled={workoutSet.isCompleted}
                   className={`min-h-[56px] min-w-[56px] rounded-xl text-2xl font-bold transition active:scale-[0.96] ${
                     workoutSet.isCompleted
                       ? 'bg-emerald-600 text-white'
