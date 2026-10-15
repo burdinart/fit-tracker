@@ -18,10 +18,22 @@ const authErrorMessages: Record<string, string> = {
   'Email not confirmed': 'Подтвердите email перед входом',
 };
 
+/** Ошибки Supabase, не попавшие в словарь, — сопоставление по подстроке. */
+const authErrorFallbacks: Array<[string, string]> = [
+  ['For security purposes', 'Слишком много попыток с этого IP (защита Supabase). Попробуйте позже или через другую сеть.'],
+  ['rate limit', 'Слишком много попыток. Подождите немного и попробуйте снова.'],
+  ['Unable to validate email address', 'Supabase отклонил этот email как некорректный. Укажите реальный адрес почты.'],
+  ['invalid signup credentials', 'Регистрация отключена на сервере. Проверьте настройки Auth в проекте Supabase.'],
+];
+
 /** Преобразует ошибку Supabase в человекочитаемое сообщение. */
 export function translateAuthError(error: unknown): string {
   const message = error instanceof Error ? error.message : String(error);
-  return authErrorMessages[message] ?? message;
+  if (authErrorMessages[message]) return authErrorMessages[message];
+  for (const [needle, human] of authErrorFallbacks) {
+    if (message.toLowerCase().includes(needle.toLowerCase())) return human;
+  }
+  return message;
 }
 
 /** Состояние и экшены авторизации. */
