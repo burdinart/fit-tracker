@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { Exercise, MuscleGroup, WorkoutExercise, WorkoutSet } from '../../types';
+import type { UserInjuries } from '../../stores/workoutStore';
 import { muscleGroupLabels } from '../../utils/labels';
 
 /** Пропсы карточки упражнения в активной тренировке. */
@@ -16,8 +17,8 @@ export interface ExerciseCardProps {
   onCompleteSet: (exerciseId: string, setId: string) => void;
   /** Удалить упражнение из сессии. */
   onRemove: (exerciseId: string) => void;
-  /** Есть ли травма плеча — подсвечивает небезопасные для плеч упражнения. */
-  hasShoulderInjury: boolean;
+  /** Типы травм пользователя — подсвечивают небезопасные для него упражнения. */
+  userInjuries: UserInjuries;
 }
 
 /** Иконка-эмодзи для группы мышц. */
@@ -47,7 +48,7 @@ function parseRepsValue(raw: string): number {
  * Карточка упражнения в активной тренировке:
  * заголовок с иконкой группы мышц, таблица подходов (вес / повторы / ✓),
  * кнопка добавления подхода и удаление упражнения.
- * При травме плеча и небезопасном для плеч упражнении — красная рамка и ⚠️.
+ * При травме пользователя и небезопасном для неё упражнении — красная рамка и ⚠️.
  */
 export function ExerciseCard({
   exercise,
@@ -56,14 +57,17 @@ export function ExerciseCard({
   onUpdateSet,
   onCompleteSet,
   onRemove,
-  hasShoulderInjury,
+  userInjuries,
 }: ExerciseCardProps) {
   /** Локальные «строковые» значения полей ввода (нужны для пустого поля и десятичных кг). */
   const [weightDrafts, setWeightDrafts] = useState<Record<string, string>>({});
   const [repsDrafts, setRepsDrafts] = useState<Record<string, string>>({});
 
-  // Определяем опасное для пользователя упражнение (травма плеча + isShoulderSafe false).
-  const isUnsafeForUser = hasShoulderInjury && !exercise.isShoulderSafe;
+  // Определяем опасное для пользователя упражнение по всем включённым травмам.
+  const isUnsafeForUser =
+    (userInjuries.shoulder && !exercise.isShoulderSafe) ||
+    (userInjuries.knee && !exercise.isKneeSafe) ||
+    (userInjuries.lowerBack && !exercise.isLowerBackSafe);
 
   /** Текущее отображаемое значение веса: черновик, если пользователь редактирует, иначе число. */
   const weightDisplay = (workoutSet: WorkoutSet): string =>
@@ -110,7 +114,7 @@ export function ExerciseCard({
           <div>
             <h3 className="text-lg font-semibold leading-tight">
               {isUnsafeForUser && (
-                <span className="mr-1" role="img" aria-label="Осторожно: небезопасно при травме плеча">
+                <span className="mr-1" role="img" aria-label="Осторожно: небезопасно при ваших ограничениях">
                   ⚠️
                 </span>
               )}
@@ -119,7 +123,7 @@ export function ExerciseCard({
             <p className="mt-0.5 text-xs text-slate-400">
               {muscleGroupLabels[exercise.muscleGroup]}
               {isUnsafeForUser && (
-                <span className="ml-2 font-medium text-rose-400">риск для плеча</span>
+                <span className="ml-2 font-medium text-rose-400">небезопасно при ваших ограничениях</span>
               )}
             </p>
           </div>
