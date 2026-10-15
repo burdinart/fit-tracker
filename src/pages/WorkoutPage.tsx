@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import type { Exercise, WorkoutSession } from '../types';
 import { useWorkoutStore } from '../stores/workoutStore';
+import { useHistoryStore } from '../stores/historyStore';
 import { useUserStore } from '../stores/userStore';
 import { useWorkoutTimer } from '../hooks/useWorkoutTimer';
 import { useRestTimer } from '../hooks/useRestTimer';
@@ -9,6 +10,7 @@ import { ExerciseCard } from '../components/workout/ExerciseCard';
 import { RestTimer } from '../components/workout/RestTimer';
 import { InjuryWarning } from '../components/ui/InjuryWarning';
 import { getSafeExercises, isExerciseSafe } from '../utils/exerciseFilter';
+import { getTotalVolume, formatVolume } from '../utils/analytics';
 import { muscleGroupLabels } from '../utils/labels';
 import { formatTime } from '../utils/format';
 
@@ -78,15 +80,20 @@ export function WorkoutPage({ exercises }: WorkoutPageProps) {
 
   /** Итог последней завершённой сессии (живёт только до перезагрузки — локальное состояние страницы). */
   const [lastSession, setLastSession] = useState<WorkoutSession | null>(null);
+  /** Показана ли модалка итогов завершённой тренировки. */
+  const [showSummary, setShowSummary] = useState(false);
   /** Развёрнута ли секция с ограниченными (небезопасными) упражнениями. */
   const [showRestricted, setShowRestricted] = useState(false);
   /** Какое упражнение требует подтверждения добавления (открыт InjuryWarning-модал). */
   const [pendingUnsafe, setPendingUnsafe] = useState<string | null>(null);
 
-  /** Завершает тренировку и показывает итог на экране выбора. */
+  /** Завершает тренировку: stopWorkout() → сохранение в историю → модалка с итогами. */
   const handleEndWorkout = (): void => {
     const session = stopWorkout();
+    // Сохраняем завершённую сессию в историю (persist 'fit-tracker-history').
+    useHistoryStore.getState().addSession(session);
     setLastSession(session);
+    setShowSummary(true);
   };
 
   /** Кнопка «+»: безопасные добавляем сразу, для опасных — открываем предупреждение. */
@@ -124,19 +131,19 @@ export function WorkoutPage({ exercises }: WorkoutPageProps) {
         </header>
 
         <section className="mx-auto max-w-lg px-4 py-6">
-          {/* Итог только что завершённой тренировки */}
+          {/* Баннер на экране выбора: тренировка уже сохранена в историю */}
           {lastSession !== null && (
             <div className="mb-4 rounded-xl border border-emerald-700 bg-emerald-900/30 px-4 py-3">
-              <p className="font-semibold text-emerald-300">Тренировка завершена 🎉</p>
-              <p className="mt-1 text-sm text-slate-300">
-                Длительность: {formatTime(lastSession.durationSec)} · Подходов выполнено:{' '}
-                {lastSession.exercises.reduce(
-                  (total, workoutExercise) =>
-                    total +
-                    workoutExercise.sets.filter((workoutSet) => workoutSet.isCompleted).length,
-                  0,
-                )}
+              <p className="font-semibold text-emerald-300">
+                Тренировка завершена 🎉 — сохранена в историю
               </p>
+              <button
+                type="button"
+                onClick={() => setShowSummary(true)}
+                className="mt-1 text-sm font-medium text-emerald-400 underline-offset-2 hover:underline"
+              >
+                Показать итоги
+              </button>
             </div>
           )}
 
@@ -250,7 +257,60 @@ export function WorkoutPage({ exercises }: WorkoutPageProps) {
           </div>
         </section>
 
-        {/* Модал подтверждения добавления небезопасного упражнения */}
+        {/* Модалка итогов завершённой тренировки (длительность, объём, подходы) */}
+      {showSummary && lastSession !== null && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="summary-title"
+          className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-4 sm:items-center"
+          onClick={() => setShowSummary(false)}
+        >
+          <div
+            className="w-full max-w-md space-y-4 rounded-2xl border border-slate-700 bg-slate-800 p-5"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <h2 id="summary-title" className="text-xl font-bold">
+              Тренировка завершена 🎉
+            </h2>
+            <p className="text-sm text-slate-400">Итоги сохранены в историю</p>
+            <div className="grid grid-cols-3 gap-3 text-center">
+              <div className="rounded-xl bg-slate-900/70 p-3">
+                <p className="text-lg font-bold tabular-nums text-emerald-400">
+                  {formatTime(lastSession.durationSec)}
+                </p>
+                <p className="mt-0.5 text-[11px] text-slate-400">Длительность</p>
+              </div>
+              <div className="rounded-xl bg-slate-900/70 p-3">
+                <p className="text-lg font-bold tabular-nums text-indigo-300">
+                  {formatVolume(getTotalVolume([lastSession]))}
+                </p>
+                <p className="mt-0.5 text-[11px] text-slate-400">Объём</p>
+              </div>
+              <div className="rounded-xl bg-slate-900/70 p-3">
+                <p className="text-lg font-bold tabular-nums text-amber-400">
+                  {lastSession.exercises.reduce(
+                    (total, workoutExercise) =>
+                      total +
+                      workoutExercise.sets.filter((workoutSet) => workoutSet.isCompleted).length,
+                    0,
+                  )}
+                </p>
+                <p className="mt-0.5 text-[11px] text-slate-400">Подходов</p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowSummary(false)}
+              className="min-h-[48px] w-full rounded-xl bg-emerald-600 text-sm font-bold text-white transition hover:bg-emerald-500"
+            >
+              Отлично
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Модал подтверждения добавления небезопасного упражнения */}
         {pendingExercise !== undefined && (
           <div
             role="dialog"
