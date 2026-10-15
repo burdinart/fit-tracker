@@ -1,11 +1,14 @@
 import { useMemo, useState } from 'react';
 import type { Exercise, WorkoutSession } from '../types';
 import { useWorkoutStore } from '../stores/workoutStore';
+import { useUserStore } from '../stores/userStore';
 import { useWorkoutTimer } from '../hooks/useWorkoutTimer';
 import { useRestTimer } from '../hooks/useRestTimer';
 import { WorkoutHeader } from '../components/workout/WorkoutHeader';
 import { ExerciseCard } from '../components/workout/ExerciseCard';
 import { RestTimer } from '../components/workout/RestTimer';
+import { InjuryWarning } from '../components/ui/InjuryWarning';
+import { getSafeExercises, isExerciseSafe } from '../utils/exerciseFilter';
 import { muscleGroupLabels } from '../utils/labels';
 import { formatTime } from '../utils/format';
 
@@ -18,8 +21,10 @@ export interface WorkoutPageProps {
 /**
  * Главный экран тренировки.
  * До старта — выбор упражнений из справочника и большая кнопка «Начать тренировку».
+ * Список выбора фильтруется по травмам из профиля пользователя (userStore):
+ * небезопасные упражнения скрыты, но доступны через сворачиваемую секцию
+ * «Показать ограниченные» с предупреждением InjuryWarning и подтверждением добавления.
  * Во время тренировки — шапка с секундомером, карточки упражнений и таймер отдыха снизу.
- * Всё состояние берётся из workoutStore (persist — данные не теряются при перезагрузке).
  */
 export function WorkoutPage({ exercises }: WorkoutPageProps) {
   // Селекторы состояния стора.
@@ -29,7 +34,6 @@ export function WorkoutPage({ exercises }: WorkoutPageProps) {
   const isResting = useWorkoutStore((state) => state.isResting);
   const restStartedAt = useWorkoutStore((state) => state.restStartedAt);
   const restTimeLeftSec = useWorkoutStore((state) => state.restTimeLeftSec);
-  const userInjuries = useWorkoutStore((state) => state.userInjuries);
 
   // Селекторы экшенов стора.
   const startWorkout = useWorkoutStore((state) => state.startWorkout);
@@ -41,7 +45,17 @@ export function WorkoutPage({ exercises }: WorkoutPageProps) {
   const completeSet = useWorkoutStore((state) => state.completeSet);
   const adjustRestTime = useWorkoutStore((state) => state.adjustRestTime);
   const skipRest = useWorkoutStore((state) => state.skipRest);
-  const toggleInjury = useWorkoutStore((state) => state.toggleInjury);
+
+  // Травмы — из профиля пользователя (источник истины: SettingsPage + persist).
+  const profile = useUserStore((state) => state.profile);
+  const injuries = useMemo(
+    () => ({
+      shoulder: profile.hasShoulderInjury,
+      knee: profile.hasKneeInjury,
+      lowerBack: profile.hasLowerBackInjury,
+    }),
+    [profile.hasShoulderInjury, profile.hasKneeInjury, profile.hasLowerBackInjury],
+  );
 
   // Секундомер тренировки и таймер отдыха (оба считаются от Date.now()-меток).
   const elapsedSec = useWorkoutTimer(sessionStartTime, isWorkoutActive);
@@ -56,17 +70,49 @@ export function WorkoutPage({ exercises }: WorkoutPageProps) {
     return map;
   }, [exercises]);
 
+  /** Разделение справочника на безопасные и ограниченные травмы-фильтром. */
+  const { safe, unsafe } = useMemo(() => getSafeExercises(exercises, injuries), [exercises, injuries]);
+
   /** Список id упражнений, уже добавленных в текущую сессию. */
   const addedIds = new Set(currentExercises.map((e) => e.exerciseId));
 
   /** Итог последней завершённой сессии (живёт только до перезагрузки — локальное состояние страницы). */
   const [lastSession, setLastSession] = useState<WorkoutSession | null>(null);
+  /** Развёрнута ли секция с ограниченными (небезопасными) упражнениями. */
+  const [showRestricted, setShowRestricted] = useState(false);
+  /** Какое упражнение требует подтверждения добавления (открыт InjuryWarning-модал). */
+  const [pendingUnsafe, setPendingUnsafe] = useState<string | null>(null);
 
   /** Завершает тренировку и показывает итог на экране выбора. */
   const handleEndWorkout = (): void => {
     const session = stopWorkout();
     setLastSession(session);
   };
+
+  /** Кнопка «+»: безопасные добавляем сразу, для опасных — открываем предупреждение. */
+  const handleAddAttempt = (exerciseId: string): void => {
+    const exercise = exerciseById.get(exerciseId);
+    if (exercise === undefined) {
+      return;
+    }
+    if (isExerciseSafe(exercise, injuries)) {
+      addExercise(exerciseId);
+      return;
+    }
+    // Пользователь явно пытается добавить небезопасное упражнение — просим подтверждение.
+    setPendingUnsafe(exerciseId);
+  };
+
+  /** Подтверждение добавления небезопасного упражнения. */
+  const confirmPendingAdd = (): void => {
+    if (pendingUnsafe !== null) {
+      addExercise(pendingUnsafe);
+      setPendingUnsafe(null);
+    }
+  };
+
+  const pendingExercise =
+    pendingUnsafe !== null ? exerciseById.get(pendingUnsafe) : undefined;
 
   // --- Экран выбора упражнений (тренировка ещё не начата) ---
   if (!isWorkoutActive) {
@@ -94,60 +140,33 @@ export function WorkoutPage({ exercises }: WorkoutPageProps) {
             </div>
           )}
 
-          {/* Переключатель травм: влияет на подсветку небезопасных упражнений */}
-          <div className="mb-4 flex flex-wrap gap-2">
-            {(
-              [
-                { type: 'shoulder' as const, label: 'Травма плеча' },
-                { type: 'knee' as const, label: 'Травма колена' },
-                { type: 'lowerBack' as const, label: 'Травма поясницы' },
-              ]
-            ).map(({ type, label }) => (
-              <button
-                key={type}
-                type="button"
-                onClick={() => toggleInjury(type)}
-                aria-pressed={userInjuries[type]}
-                className={`min-h-[44px] rounded-full px-4 py-2 text-sm font-medium transition ${
-                  userInjuries[type]
-                    ? 'bg-rose-600 text-white'
-                    : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
-                }`}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
+          {/* Ограничения взяты из настроек профиля */}
+          {(injuries.shoulder || injuries.knee || injuries.lowerBack) && (
+            <p className="mb-4 rounded-xl border border-slate-700 bg-slate-800/60 px-4 py-2.5 text-xs text-slate-400">
+              ⚠️ Фильтр травм активен — измените ограничения во вкладке «Настройки»
+            </p>
+          )}
 
-          {/* Список справочника с кнопкой добавления */}
-          <ul className="space-y-2 pb-32">
-            {exercises.map((exercise) => {
+          {/* Список безопасных упражнений */}
+          <ul className="space-y-2">
+            {safe.map((exercise) => {
               const isAdded = addedIds.has(exercise.id);
-              const isUnsafe =
-                (userInjuries.shoulder && !exercise.isShoulderSafe) ||
-                (userInjuries.knee && !exercise.isKneeSafe) ||
-                (userInjuries.lowerBack && !exercise.isLowerBackSafe);
               return (
                 <li
                   key={exercise.id}
-                  className={`flex items-center justify-between gap-3 rounded-xl border bg-slate-800 px-4 py-3 ${
-                    isUnsafe ? 'border-rose-500/60' : 'border-slate-700'
-                  }`}
+                  className="flex items-center justify-between gap-3 rounded-xl border border-slate-700 bg-slate-800 px-4 py-3"
                 >
                   <div className="min-w-0">
-                    <p className="truncate font-medium">
-                      {isUnsafe && <span aria-hidden="true">⚠️ </span>}
-                      {exercise.name}
-                    </p>
+                    <p className="truncate font-medium">{exercise.name}</p>
                     <p className="text-xs text-slate-400">
                       {muscleGroupLabels[exercise.muscleGroup]}
                     </p>
                   </div>
                   <button
                     type="button"
-                    onClick={() => addExercise(exercise.id)}
+                    onClick={() => handleAddAttempt(exercise.id)}
                     disabled={isAdded}
-                    className="min-h-[56px] min-w-[56px] shrink-0 rounded-xl text-2xl font-bold transition active:scale-[0.96] disabled:opacity-40 disabled:active:scale-100 ml-2 bg-emerald-700 text-white hover:bg-emerald-600"
+                    className="ml-2 min-h-[56px] min-w-[56px] shrink-0 rounded-xl bg-emerald-700 text-2xl font-bold text-white transition hover:bg-emerald-600 active:scale-[0.96] disabled:opacity-40 disabled:active:scale-100"
                     aria-label={`Добавить ${exercise.name} в тренировку`}
                   >
                     {isAdded ? '✓' : '+'}
@@ -157,8 +176,68 @@ export function WorkoutPage({ exercises }: WorkoutPageProps) {
             })}
           </ul>
 
+          {/* Скрытые по травмам упражнения — доступны только после подтверждения */}
+          {unsafe.length > 0 && (
+            <div className="mt-4">
+              <button
+                type="button"
+                onClick={() => setShowRestricted((prev) => !prev)}
+                aria-expanded={showRestricted}
+                className="min-h-[44px] w-full rounded-xl border border-dashed border-rose-500/50 px-4 py-2 text-sm font-medium text-rose-300 transition hover:bg-rose-950/40"
+              >
+                {showRestricted
+                  ? 'Скрыть ограниченные упражнения'
+                  : `Показать ограниченные (${unsafe.length})`}
+              </button>
+              {showRestricted && (
+                <ul className="mt-2 space-y-2">
+                  {unsafe.map(({ exercise, reasons }) => {
+                    const isAdded = addedIds.has(exercise.id);
+                    return (
+                      <li
+                        key={exercise.id}
+                        className="rounded-xl border border-rose-500/60 bg-slate-800 px-4 py-3"
+                      >
+                        <div className="flex items-center justify-between gap-3">
+                          <div className="min-w-0">
+                            <p className="truncate font-medium">
+                              <span aria-hidden="true">⚠️ </span>
+                              {exercise.name}
+                            </p>
+                            <p className="text-xs text-slate-400">
+                              {muscleGroupLabels[exercise.muscleGroup]}
+                            </p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => handleAddAttempt(exercise.id)}
+                            disabled={isAdded}
+                            className="ml-2 min-h-[56px] min-w-[56px] shrink-0 rounded-xl bg-rose-700 text-2xl font-bold text-white transition hover:bg-rose-600 active:scale-[0.96] disabled:opacity-40 disabled:active:scale-100"
+                            aria-label={`Добавить ${exercise.name} (потребует подтверждения)`}
+                          >
+                            {isAdded ? '✓' : '+'}
+                          </button>
+                        </div>
+                        <div className="mt-2">
+                          <InjuryWarning exercise={exercise} injuries={injuries} allExercises={exercises} />
+                        </div>
+                        {/* Причина в data-атрибуте не нужна — reasons уже в тексте плашки;
+                            оставляем переменную задействованной для aria-описания строки */}
+                        <span className="sr-only" id={`unsafe-${exercise.id}`}>
+                          Небезопасно при травме: {reasons.join(', ')}
+                        </span>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+            </div>
+          )}
+
+          <div className="pb-32" />
+
           {/* Большая фиксированная кнопка старта */}
-          <div className="fixed inset-x-0 bottom-0 border-t border-slate-800 bg-slate-900/95 px-4 py-4 backdrop-blur">
+          <div className="fixed inset-x-0 bottom-14 border-t border-slate-800 bg-slate-900/95 px-4 py-4 backdrop-blur">
             <div className="mx-auto max-w-lg">
               <button
                 type="button"
@@ -170,6 +249,51 @@ export function WorkoutPage({ exercises }: WorkoutPageProps) {
             </div>
           </div>
         </section>
+
+        {/* Модал подтверждения добавления небезопасного упражнения */}
+        {pendingExercise !== undefined && (
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="unsafe-confirm-title"
+            className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-4 sm:items-center"
+            onClick={() => setPendingUnsafe(null)}
+          >
+            <div
+              className="w-full max-w-md space-y-4 rounded-2xl border border-slate-700 bg-slate-800 p-5"
+              onClick={(event) => event.stopPropagation()}
+            >
+              <h2 id="unsafe-confirm-title" className="text-lg font-bold">
+                Добавить «{pendingExercise.name}»?
+              </h2>
+              <InjuryWarning
+                exercise={pendingExercise}
+                injuries={injuries}
+                allExercises={exercises}
+              />
+              <p className="text-sm text-slate-400">
+                Это упражнение небезопасно при ваших ограничениях. Вы можете добавить его вручную,
+                взяв ответственность на себя.
+              </p>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setPendingUnsafe(null)}
+                  className="min-h-[48px] flex-1 rounded-xl border border-slate-600 text-sm font-medium text-slate-300 transition hover:bg-slate-700"
+                >
+                  Отмена
+                </button>
+                <button
+                  type="button"
+                  onClick={confirmPendingAdd}
+                  className="min-h-[48px] flex-1 rounded-xl bg-rose-600 text-sm font-bold text-white transition hover:bg-rose-500"
+                >
+                  Всё равно добавить
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </main>
     );
   }
@@ -200,7 +324,8 @@ export function WorkoutPage({ exercises }: WorkoutPageProps) {
                 onUpdateSet={updateSet}
                 onCompleteSet={completeSet}
                 onRemove={removeExercise}
-                userInjuries={userInjuries}
+                userInjuries={injuries}
+                allExercises={exercises}
               />
             );
           })
