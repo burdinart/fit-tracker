@@ -274,9 +274,22 @@ export const useWorkoutStore = create<WorkoutState>()(
         });
       },
 
+      /**
+       * Корректировка ТЕКУЩЕГО отдыха на delta секунд (+15 / −15).
+       * Остаток пересчитываем от абсолютной метки restStartedAt (как в useRestTimer),
+       * затем стартуем новый отсчёт: restStartedAt = now, restTimeLeftSec = новый остаток.
+       * Если отдых не активен — меняем плановую длительность для следующих подходов.
+       */
       adjustRestTime: (delta: number) => {
-        const next = Math.max(MIN_REST_TIME, get().defaultRestTime + delta);
-        set({ defaultRestTime: next });
+        const { isResting, restStartedAt, restTimeLeftSec, defaultRestTime } = get();
+        if (isResting && restStartedAt !== null) {
+          const passedSec = Math.floor((Date.now() - restStartedAt) / 1000);
+          const currentRemaining = Math.max(0, restTimeLeftSec - passedSec);
+          const newRemaining = Math.max(MIN_REST_TIME, currentRemaining + delta);
+          set({ restStartedAt: Date.now(), restTimeLeftSec: newRemaining });
+          return;
+        }
+        set({ defaultRestTime: Math.max(MIN_REST_TIME, defaultRestTime + delta) });
       },
 
       skipRest: () => {
