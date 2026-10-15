@@ -26,14 +26,15 @@ export interface UserInjuries {
 /** Значение отдыха по умолчанию, если сохранённых данных ещё нет (сек). */
 const DEFAULT_REST_TIME = 90;
 
+/** Минимальный шаг изменения длительности отдыха (сек) — защита от «слишком короткого» отдыха. */
+const MIN_REST_TIME = 15;
+
 /** Состояние и экшены активной тренировки. */
 export interface WorkoutState {
   /** Идёт ли сейчас тренировка. */
   isWorkoutActive: boolean;
   /** Метка времени начала тренировки (мс) или null, если тренировка не идёт. */
   sessionStartTime: number | null;
-  /** Общее прошедшее время тренировки в секундах (обновляется хуком useWorkoutTimer). */
-  elapsedSec: number;
   /** Упражнения, добавленные в текущую сессию. */
   currentExercises: WorkoutExercise[];
   /** Активен ли сейчас таймер отдыха. */
@@ -61,14 +62,12 @@ export interface WorkoutState {
   updateSet: (exerciseId: string, setId: string, data: Partial<WorkoutSet>) => void;
   /** Помечает подход выполненным и запускает таймер отдыха. */
   completeSet: (exerciseId: string, setId: string) => void;
-  /** Изменяет длительность отдыха по умолчанию на delta секунд (не ниже 0). */
+  /** Изменяет длительность отдыха по умолчанию на delta секунд (не ниже MIN_REST_TIME). */
   adjustRestTime: (delta: number) => void;
   /** Досрочно завершает текущий отдых. */
   skipRest: () => void;
   /** Переключает флаг травмы пользователя (плечо / колено / поясница). */
   toggleInjury: (type: InjuryType) => void;
-  /** Обновляет прошедшее время тренировки (вызывается из useWorkoutTimer). */
-  setElapsedSec: (sec: number) => void;
 }
 
 /** Генерация короткого уникального идентификатора для подхода. */
@@ -90,8 +89,7 @@ function createEmptySet(restTimeSec: number): WorkoutSet {
 /** Дефолтное (пустое) состояние стора. */
 const initialState = {
   isWorkoutActive: false,
-  sessionStartTime: null,
-  elapsedSec: 0,
+  sessionStartTime: null as number | null,
   currentExercises: [] as WorkoutExercise[],
   isResting: false,
   restTimeLeftSec: DEFAULT_REST_TIME,
@@ -136,7 +134,6 @@ export const useWorkoutStore = create<WorkoutState>()(
         set({
           isWorkoutActive: true,
           sessionStartTime: Date.now(),
-          elapsedSec: 0,
           currentExercises: [],
           isResting: false,
           restStartedAt: null,
@@ -144,14 +141,14 @@ export const useWorkoutStore = create<WorkoutState>()(
       },
 
       stopWorkout: () => {
-        const { sessionStartTime, currentExercises, elapsedSec } = get();
+        const { sessionStartTime, currentExercises } = get();
         const startTime = sessionStartTime ?? Date.now();
         // Длительность считаем от меток времени, с защитой от отрицательного значения.
         const durationSec = Math.max(0, Math.floor((Date.now() - startTime) / 1000));
         const session: WorkoutSession = {
           id: `session-${startTime.toString(36)}`,
           date: startTime,
-          durationSec: durationSec > 0 ? durationSec : elapsedSec,
+          durationSec,
           exercises: currentExercises,
           completed: true,
         };
@@ -219,7 +216,7 @@ export const useWorkoutStore = create<WorkoutState>()(
       },
 
       adjustRestTime: (delta: number) => {
-        const next = Math.max(0, get().defaultRestTime + delta);
+        const next = Math.max(MIN_REST_TIME, get().defaultRestTime + delta);
         set({ defaultRestTime: next });
       },
 
@@ -231,10 +228,6 @@ export const useWorkoutStore = create<WorkoutState>()(
         const { userInjuries } = get();
         // Инвертируем выбранный флаг травмы, остальные сохраняем.
         set({ userInjuries: { ...userInjuries, [type]: !userInjuries[type] } });
-      },
-
-      setElapsedSec: (sec: number) => {
-        set({ elapsedSec: sec });
       },
     }),
     {

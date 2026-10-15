@@ -14,3 +14,12 @@ if (rootElement !== null) {
     </StrictMode>,
   );
 }
+
+// Регистрация Service Worker (PWA, офлайн-режим) — только в production-сборке.
+if ('serviceWorker' in navigator && import.meta.env.PROD) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/fit-tracker/sw.js').catch(() => {
+      // Ошибка регистрации не критична: приложение работает без офлайн-кэша.
+    });
+  });
+}
