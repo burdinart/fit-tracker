@@ -131,17 +131,24 @@ export function AuthPage() {
             />
           </label>
 
-          {/* Сообщения об ошибках / успехе */}
-          {error && (
-            <p role="alert" className="rounded-xl bg-red-500/10 px-4 py-3 text-sm text-red-400">
-              ⚠️ {error}
-            </p>
-          )}
-          {info && (
-            <p className="rounded-xl bg-emerald-500/10 px-4 py-3 text-sm text-emerald-400">
-              ✓ {info}
-            </p>
-          )}
+          {/* Сообщения об ошибках / успехе.
+              Контейнер всегда присутствует в DOM (aria-live), чтобы скринридеры
+              и тесты стабильно видели появление текста; видимость сообщения
+              управляется внутренним элементом. */}
+          <div aria-live="assertive" role="alert">
+            {error && (
+              <p className="rounded-xl bg-red-500/10 px-4 py-3 text-sm text-red-400">
+                ⚠️ {error}
+              </p>
+            )}
+          </div>
+          <div aria-live="polite">
+            {info && (
+              <p className="rounded-xl bg-emerald-500/10 px-4 py-3 text-sm text-emerald-400">
+                ✓ {info}
+              </p>
+            )}
+          </div>
 
           <button
             type="submit"
