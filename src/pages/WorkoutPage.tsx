@@ -9,6 +9,7 @@ import { WorkoutHeader } from '../components/workout/WorkoutHeader';
 import { ExerciseCard } from '../components/workout/ExerciseCard';
 import { RestTimer } from '../components/workout/RestTimer';
 import { InjuryWarning } from '../components/ui/InjuryWarning';
+import { useAuthStore } from '../stores/authStore';
 import { getSafeExercises, isExerciseSafe } from '../utils/exerciseFilter';
 import { getTotalVolume, formatVolume } from '../utils/analytics';
 import { muscleGroupLabels } from '../utils/labels';
@@ -87,11 +88,13 @@ export function WorkoutPage({ exercises }: WorkoutPageProps) {
   /** Какое упражнение требует подтверждения добавления (открыт InjuryWarning-модал). */
   const [pendingUnsafe, setPendingUnsafe] = useState<string | null>(null);
 
-  /** Завершает тренировку: stopWorkout() → сохранение в историю → модалка с итогами. */
+  /** Завершает тренировку: stopWorkout() → сохранение в историю → облако → модалка с итогами. */
   const handleEndWorkout = (): void => {
     const session = stopWorkout();
     // Сохраняем завершённую сессию в историю (persist 'fit-tracker-history').
     useHistoryStore.getState().addSession(session);
+    // Синхронизируем с Supabase (при отсутствии сети/ошибке — данные уйдут в очередь syncQueue).
+    void useWorkoutStore.getState().syncSessionToCloud(session);
     setLastSession(session);
     setShowSummary(true);
   };
@@ -126,8 +129,20 @@ export function WorkoutPage({ exercises }: WorkoutPageProps) {
     return (
       <main className="min-h-screen bg-slate-900 text-slate-100">
         <header className="border-b border-slate-800 px-4 py-6">
-          <h1 className="text-2xl font-bold tracking-tight">FitTracker</h1>
-          <p className="mt-1 text-sm text-slate-400">Выберите упражнения и начните тренировку</p>
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <h1 className="text-2xl font-bold tracking-tight">FitTracker</h1>
+              <p className="mt-1 text-sm text-slate-400">Выберите упражнения и начните тренировку</p>
+            </div>
+            {/* Кнопка выхода из аккаунта (Supabase Auth) */}
+            <button
+              type="button"
+              onClick={() => void useAuthStore.getState().signOut()}
+              className="shrink-0 rounded-xl border border-slate-700 bg-slate-800 px-3 py-2 text-sm font-medium text-slate-300 transition hover:bg-slate-700 hover:text-white"
+            >
+              Выйти
+            </button>
+          </div>
         </header>
 
         <section className="mx-auto max-w-lg px-4 py-6">

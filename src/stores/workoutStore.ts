@@ -2,6 +2,16 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { UserInjuries, WorkoutExercise, WorkoutSession, WorkoutSet } from '../types';
 import { useUserStore, getInjuriesFromProfile } from './userStore';
+import { useAuthStore } from './authStore';
+import {
+  supabase,
+  type Database,
+} from '../lib/supabase';
+
+/** Формы вставки для cloud-таблиц (приводим payload'ы к ним явно — strict TS). */
+type SessionInsert = Database['public']['Tables']['workout_sessions']['Insert'];
+type SetInsert = Database['public']['Tables']['workout_sets']['Insert'];
+import { addToQueue } from '../services/syncQueue';
 
 /** Типы травм пользователя для фильтрации небезопасных упражнений. */
 export type InjuryType = 'shoulder' | 'knee' | 'lowerBack';
@@ -61,6 +71,46 @@ export interface WorkoutState {
   toggleInjury: (type: InjuryType) => void;
   /** Полная синхронизация derived-полей (травмы + отдых по умолчанию) с профилем из userStore. */
   syncWithProfile: () => void;
+  /**
+   * Сохраняет завершённую сессию в Supabase (workout_sessions + workout_sets).
+   * При ошибке сети/авторизации данные кладутся в локальную очередь офлайн-синхронизации.
+   */
+  syncSessionToCloud: (session: WorkoutSession) => Promise<void>;
+}
+
+/**
+ * Конвертирует доменную сессию приложения в формы вставки таблиц Supabase.
+ * id остаются стабильными — повторная отправка из очереди идемпотентна (upsert / on-conflict-вставка).
+ * Поле «order» в workout_sets записывается в кавычках — это зарезервированное слово Postgres.
+ */
+export function buildCloudPayload(userId: string, session: WorkoutSession): {
+  sessionRow: SessionInsert;
+  setRows: SetInsert[];
+} {
+  // Строка сессии для таблицы workout_sessions.
+  const sessionRow: SessionInsert = {
+    id: session.id,
+    user_id: userId,
+    started_at: new Date(session.date).toISOString(),
+    duration_sec: session.durationSec,
+    completed: session.completed,
+  };
+  // Подходы: по одному на выполненный подход, порядок внутри упражнения — по индексу.
+  const setRows: SetInsert[] = session.exercises.flatMap((exercise) =>
+    exercise.sets.map((workoutSet, index): SetInsert => ({
+      id: workoutSet.id,
+      session_id: session.id,
+      exercise_id: exercise.exerciseId,
+      weight: workoutSet.weight,
+      reps: workoutSet.reps,
+      rpe: workoutSet.rpe ?? null,
+      rest_time_sec: workoutSet.restTimeSec,
+      is_completed: workoutSet.isCompleted,
+      completed_at: workoutSet.completedAt ? new Date(workoutSet.completedAt).toISOString() : null,
+      "order": index + 1,
+    })),
+  );
+  return { sessionRow, setRows };
 }
 
 /** Генерация короткого уникального идентификатора для подхода. */
@@ -241,6 +291,33 @@ export const useWorkoutStore = create<WorkoutState>()(
       /** Полная синхронизация derived-полей (травмы + отдых) с профилем из userStore. */
       syncWithProfile: () => {
         set(syncFromProfile());
+      },
+
+      /** Сохраняет завершённую тренировку в Supabase; при сбое — в очередь офлайн-синхронизации. */
+      syncSessionToCloud: async (session: WorkoutSession) => {
+        const userId = useAuthStore.getState().user?.id;
+        if (!userId) {
+          // Не авторизован — сохраняем локально: история (historyStore) уже записана,
+          // в облако уйдёт после входа через повторный вызов или очередь не нужна.
+          console.warn('[workoutStore] Пользователь не авторизован — сессия осталась только в локальной истории.');
+          return;
+        }
+        const { sessionRow, setRows } = buildCloudPayload(userId, session);
+        try {
+          // 1) Сессия.
+          const { error: sessionError } = await supabase.from('workout_sessions').upsert(sessionRow);
+          if (sessionError) throw sessionError;
+          // 2) Подходы (одной пакетной вставкой).
+          if (setRows.length > 0) {
+            const { error: setsError } = await supabase.from('workout_sets').insert(setRows);
+            if (setsError) throw setsError;
+          }
+          console.info(`[workoutStore] Сессия ${session.id} синхронизирована с облаком.`);
+        } catch (error) {
+          // Нет соединения / ошибка БД — кладём в очередь, отправим при появлении сети.
+          console.error('[workoutStore] Ошибка облачной синхронизации — данные помещены в очередь:', error);
+          addToQueue({ session: sessionRow, sets: setRows });
+        }
       },
     }),
     {
