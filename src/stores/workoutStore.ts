@@ -25,8 +25,8 @@ export type InjuryType = 'shoulder' | 'knee' | 'lowerBack';
  * это гарантирует корректное время после «заморозки» вкладки браузером.
  */
 
-/** Значение отдыха по умолчанию, если сохранённых данных ещё нет (сек). */
-const DEFAULT_REST_TIME = 90;
+/** Дефолтный отдых между подходами, сек (используется стором и при создании профиля в Supabase). */
+export const DEFAULT_REST_TIME = 90;
 
 /** Минимальный шаг изменения длительности отдыха (сек) — защита от «слишком короткого» отдыха. */
 const MIN_REST_TIME = 15;
@@ -85,11 +85,15 @@ export interface WorkoutState {
  * Поле «order» в workout_sets записывается в кавычках — это зарезервированное слово Postgres.
  */
 export function buildCloudPayload(userId: string, session: WorkoutSession): {
+  /** Стабильный UUID сессии, использованный при построении payload (в т.ч. нормализованный). */
+  sessionId: string;
   sessionRow: SessionInsert;
   setRows: SetInsert[];
 } {
   // Защита от старых не-UUID id (session-xxx / set-xxx) из localStorage и очереди:
   // PostgreSQL требует uuid, иначе вставка падает с "Invalid input syntax for type uuid".
+  // Нормализованный sessionId возвращаем наружу — синхронизация очередей должна
+  // использовать ровно те же id, что ушли в облако (идемпотентность повторных отправок).
   const sessionId = isValidUUID(session.id) ? session.id : generateUUID();
   // Строка сессии для таблицы workout_sessions.
   const sessionRow: SessionInsert = {
@@ -114,7 +118,7 @@ export function buildCloudPayload(userId: string, session: WorkoutSession): {
       "order": index + 1,
     })),
   );
-  return { sessionRow, setRows };
+  return { sessionId, sessionRow, setRows };
 }
 
 /** Генерация идентификатора подхода — UUID v4 (колонка workout_sets.id имеет тип uuid). */
@@ -331,7 +335,7 @@ export const useWorkoutStore = create<WorkoutState>()(
           console.warn('[workoutStore] Пользователь не авторизован — сессия осталась только в локальной истории.');
           return;
         }
-        const { sessionRow, setRows } = buildCloudPayload(userId, session);
+        const { sessionId, sessionRow, setRows } = buildCloudPayload(userId, session);
         try {
           // 1) Сессия.
           const { error: sessionError } = await supabase.from('workout_sessions').upsert(sessionRow);
@@ -341,7 +345,7 @@ export const useWorkoutStore = create<WorkoutState>()(
             const { error: setsError } = await supabase.from('workout_sets').insert(setRows);
             if (setsError) throw setsError;
           }
-          console.info(`[workoutStore] Сессия ${session.id} синхронизирована с облаком.`);
+          console.info(`[workoutStore] Сессия ${sessionId} синхронизирована с облаком.`);
         } catch (error) {
           // Нет соединения / ошибка БД — кладём в очередь, отправим при появлении сети.
           console.error('[workoutStore] Ошибка облачной синхронизации — данные помещены в очередь:', error);

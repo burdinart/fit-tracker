@@ -26,12 +26,15 @@ export function toExercise(row: ExerciseRow): Exercise {
     isKneeSafe: row.is_knee_safe,
     isLowerBackSafe: row.is_lower_back_safe,
     alternatives: row.alternatives ?? undefined,
+    createdBy: row.created_by ?? null,
+    isCustom: row.is_custom ?? false,
   };
 }
 
-/** Получает все упражнения из БД Supabase. */
+/** Получает все упражнения из БД Supabase (базовые справочника + пользовательские). */
 export async function fetchExercises(): Promise<Exercise[]> {
   try {
+    // select('*') возвращает и системные (created_by = null), и кастомные упражнения.
     const { data, error } = await supabase.from('exercises').select('*');
     if (error) throw error;
     if (!data || data.length === 0) {

@@ -39,6 +39,10 @@ export interface Exercise {
   isLowerBackSafe: boolean;
   /** Идентификаторы безопасных альтернатив (если упражнение травмоопасно). */
   alternatives?: string[];
+  /** Автор упражнения (id пользователя Supabase), null для системных. */
+  createdBy?: string | null;
+  /** Пользовательское упражнение (создано из приложения, а не из справочника). */
+  isCustom?: boolean;
 }
 
 /** Один рабочий подход в упражнении. */

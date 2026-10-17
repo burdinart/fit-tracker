@@ -9,11 +9,23 @@ import { WorkoutHeader } from '../components/workout/WorkoutHeader';
 import { ExerciseCard } from '../components/workout/ExerciseCard';
 import { RestTimer } from '../components/workout/RestTimer';
 import { InjuryWarning } from '../components/ui/InjuryWarning';
+import { CreateExerciseModal } from '../components/ui/CreateExerciseModal';
 import { useAuthStore } from '../stores/authStore';
+import { fetchExercises } from '../services/exercisesService';
 import { getSafeExercises, isExerciseSafe } from '../utils/exerciseFilter';
 import { getTotalVolume, formatVolume } from '../utils/analytics';
+import { buildExerciseIndex } from '../utils/registry';
 import { muscleGroupLabels } from '../utils/labels';
 import { formatTime } from '../utils/format';
+
+/** Подсчёт выполненных подходов во всех упражнениях сессии (для итогов). */
+function countCompletedSets(session: WorkoutSession): number {
+  return session.exercises.reduce(
+    (total, workoutExercise) =>
+      total + workoutExercise.sets.filter((workoutSet) => workoutSet.isCompleted).length,
+    0,
+  );
+}
 
 /** Пропсы страницы тренировки. */
 export interface WorkoutPageProps {
@@ -64,14 +76,8 @@ export function WorkoutPage({ exercises }: WorkoutPageProps) {
   const elapsedSec = useWorkoutTimer(sessionStartTime, isWorkoutActive);
   const { remainingSec, isFinished } = useRestTimer(restStartedAt, restTimeLeftSec, isResting);
 
-  // Быстрый доступ к справочнику по id упражнения.
-  const exerciseById = useMemo(() => {
-    const map = new Map<string, Exercise>();
-    for (const exercise of exercises) {
-      map.set(exercise.id, exercise);
-    }
-    return map;
-  }, [exercises]);
+  // Быстрый доступ к справочнику по id упражнения (общий индекс — utils/registry).
+  const exerciseById = useMemo(() => buildExerciseIndex(exercises), [exercises]);
 
   /** Разделение справочника на безопасные и ограниченные травмы-фильтром. */
   const { safe, unsafe } = useMemo(() => getSafeExercises(exercises, injuries), [exercises, injuries]);
@@ -310,12 +316,7 @@ export function WorkoutPage({ exercises }: WorkoutPageProps) {
               </div>
               <div className="rounded-xl bg-slate-900/70 p-3">
                 <p className="text-lg font-bold tabular-nums text-amber-400">
-                  {lastSession.exercises.reduce(
-                    (total, workoutExercise) =>
-                      total +
-                      workoutExercise.sets.filter((workoutSet) => workoutSet.isCompleted).length,
-                    0,
-                  )}
+                  {countCompletedSets(lastSession)}
                 </p>
                 <p className="mt-0.5 text-[11px] text-slate-400">Подходов</p>
               </div>

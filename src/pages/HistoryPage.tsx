@@ -4,6 +4,7 @@ import { useHistoryStore } from '../stores/historyStore';
 import { useUserStore } from '../stores/userStore';
 import { SessionDetail } from '../components/workout/SessionDetail';
 import {
+  getSessionVolume,
   getTotalVolume,
   getStreak,
   formatVolume,
@@ -14,13 +15,6 @@ import { formatTime } from '../utils/format';
 export interface HistoryPageProps {
   /** Справочник упражнений — нужен, чтобы в деталях показать названия. */
   exercises: Exercise[];
-}
-
-/** Объём (тоннаж) одной сессии: сумма вес × повторы по выполненным подходам. */
-function sessionVolume(
-  session: Parameters<typeof getTotalVolume>[0][number],
-): number {
-  return getTotalVolume([session]);
 }
 
 /**
@@ -123,7 +117,7 @@ export function HistoryPage({ exercises }: HistoryPageProps) {
                 <p className="mt-1.5 flex flex-wrap gap-x-4 gap-y-1 text-sm text-slate-400 tabular-nums">
                   <span>⏱ {formatTime(session.durationSec)}</span>
                   <span>Упражнений: {session.exercises.length}</span>
-                  <span>Объём: {formatVolume(sessionVolume(session))}</span>
+                  <span>Объём: {formatVolume(getSessionVolume(session))}</span>
                 </p>
               </button>
             </li>

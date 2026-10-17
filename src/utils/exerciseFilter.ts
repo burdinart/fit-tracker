@@ -1,4 +1,5 @@
 import type { Exercise, UserInjuries } from '../types';
+import { buildExerciseIndex } from './registry';
 
 /**
  * Фильтрация упражнений с учётом травм пользователя.
@@ -87,8 +88,8 @@ export function getAlternativeNames(exercise: Exercise, allExercises: Exercise[]
   if (exercise.alternatives === undefined || exercise.alternatives.length === 0) {
     return [];
   }
-  const nameById = new Map(allExercises.map((candidate) => [candidate.id, candidate.name]));
+  const nameById = buildExerciseIndex(allExercises);
   return exercise.alternatives
-    .map((alternativeId) => nameById.get(alternativeId))
+    .map((alternativeId) => nameById.get(alternativeId)?.name)
     .filter((name): name is string => name !== undefined);
 }

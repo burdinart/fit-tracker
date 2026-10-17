@@ -1,9 +1,52 @@
 import { create } from 'zustand';
 import type { User } from '@supabase/supabase-js';
 import { supabase, type Database, type ProfileRow } from '../lib/supabase';
+import { DEFAULT_REST_TIME } from './workoutStore';
 
 /** Форма вставки профиля (приводим payload явно — strict TS). */
 type ProfileInsert = Database['public']['Tables']['profiles']['Insert'];
+
+/** Обязательные поля профиля (без id/email/name/created_at) — Required по оставшимся полям Insert-формы. */
+type ProfileRowDefaults = Required<Omit<ProfileInsert, 'id' | 'email' | 'name' | 'created_at'>>;
+
+/** Профиль по умолчанию — тот же, что создаётся при первом входе без строки в таблице. */
+const DEFAULT_PROFILE_FIELDS: ProfileRowDefaults = {
+  has_shoulder_injury: false,
+  has_knee_injury: false,
+  has_lower_back_injury: false,
+  default_rest_time: DEFAULT_REST_TIME,
+  units: 'kg',
+};
+
+/** Собирает полный ProfileInsert из id/email/name + дефолтных настроек. */
+function buildDefaultProfile(
+  id: string,
+  email: string | null,
+  name: string | null,
+): ProfileInsert {
+  return { id, email, name, created_at: new Date().toISOString(), ...DEFAULT_PROFILE_FIELDS };
+}
+
+/** Локальный профиль-фолбэк (при недоступности Supabase) — структура ProfileRow + дефолты. */
+function buildFallbackProfileRow(user: User): ProfileRow {
+  const defaults = DEFAULT_PROFILE_FIELDS;
+  return {
+    id: user.id,
+    email: user.email ?? null,
+    name: getNameFromMetadata(user),
+    has_shoulder_injury: defaults.has_shoulder_injury,
+    has_knee_injury: defaults.has_knee_injury,
+    has_lower_back_injury: defaults.has_lower_back_injury,
+    default_rest_time: defaults.default_rest_time,
+    units: defaults.units,
+    created_at: new Date().toISOString(),
+  };
+}
+
+/** Извлекает имя пользователя из метаданных Supabase Auth. */
+function getNameFromMetadata(user: User): string | null {
+  return ((user.user_metadata as { name?: string })?.name) ?? null;
+}
 
 /**
  * Zustand store аутентификации через Supabase Auth.
@@ -115,16 +158,11 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       if (!data.session) {
         if (data.user) {
           try {
-            const newProfile: ProfileInsert = {
-              id: data.user.id,
-              email: data.user.email ?? null,
-              name: name.trim() || null,
-              has_shoulder_injury: false,
-              has_knee_injury: false,
-              has_lower_back_injury: false,
-              default_rest_time: 90,
-              units: 'kg',
-            };
+            const newProfile = buildDefaultProfile(
+              data.user.id,
+              data.user.email ?? null,
+              name.trim() || null,
+            );
             await supabase.from('profiles').upsert(newProfile);
           } catch (error) {
             console.error('[authStore] Не удалось создать профиль при регистрации:', error);
@@ -171,16 +209,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         return;
       }
       // Профиля ещё нет (например, триггер БД не сработал) — создаём с дефолтами.
-      const newProfile: ProfileInsert = {
-        id: user.id,
-        email: user.email ?? null,
-        name: ((user.user_metadata as { name?: string })?.name) ?? null,
-        has_shoulder_injury: false,
-        has_knee_injury: false,
-        has_lower_back_injury: false,
-        default_rest_time: 90,
-        units: 'kg',
-      };
+      const newProfile = buildDefaultProfile(user.id, user.email ?? null, getNameFromMetadata(user));
       const { data: created, error: insertError } = await supabase
         .from('profiles')
         .upsert(newProfile)
@@ -191,19 +220,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     } catch (error) {
       console.error('[authStore] Не удалось загрузить профиль:', error);
       // Фолбэк: локально сконструированный профиль, чтобы приложение оставалось рабочим.
-      set({
-        profile: {
-          id: user.id,
-          email: user.email ?? null,
-          name: ((user.user_metadata as { name?: string })?.name) ?? null,
-          has_shoulder_injury: false,
-          has_knee_injury: false,
-          has_lower_back_injury: false,
-          default_rest_time: 90,
-          units: 'kg',
-          created_at: new Date().toISOString(),
-        },
-      });
+      set({ profile: buildFallbackProfileRow(user) });
     }
   },
 }));

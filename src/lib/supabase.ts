@@ -85,6 +85,10 @@ export interface Database {
           is_knee_safe: boolean;
           is_lower_back_safe: boolean;
           alternatives: string[] | null;
+          /** Автор упражнения (null для системных из справочника). */
+          created_by: string | null;
+          /** Пользовательское ли упражнение (создано кем-то из приложений). */
+          is_custom: boolean;
           created_at: string;
         };
         Insert: {
@@ -96,6 +100,8 @@ export interface Database {
           is_knee_safe?: boolean;
           is_lower_back_safe?: boolean;
           alternatives?: string[] | null;
+          created_by?: string | null;
+          is_custom?: boolean;
           created_at?: string;
         };
         Update: {
@@ -107,6 +113,8 @@ export interface Database {
           is_knee_safe?: boolean;
           is_lower_back_safe?: boolean;
           alternatives?: string[] | null;
+          created_by?: string | null;
+          is_custom?: boolean;
           created_at?: string;
         };
         Relationships: [];

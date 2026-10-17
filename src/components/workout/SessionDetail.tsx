@@ -1,7 +1,17 @@
 import type { Exercise, WorkoutSession } from '../../types';
 import { getMaxEstimated1RM } from '../../utils/analytics';
+import { buildExerciseIndex } from '../../utils/registry';
 import { formatWeight } from '../../utils/format';
 import { muscleGroupLabels } from '../../utils/labels';
+
+/** Подсчёт выполненных подходов во всех упражнениях сессии. */
+function countCompletedSets(session: WorkoutSession): number {
+  return session.exercises.reduce(
+    (total, workoutExercise) =>
+      total + workoutExercise.sets.filter((workoutSet) => workoutSet.isCompleted).length,
+    0,
+  );
+}
 
 /** Пропсы детального просмотра завершённой тренировки. */
 export interface SessionDetailProps {
@@ -20,7 +30,7 @@ export interface SessionDetailProps {
  * Рендерится внутри модалки на HistoryPage.
  */
 export function SessionDetail({ session, exercises, units }: SessionDetailProps) {
-  const exerciseById = new Map(exercises.map((exercise) => [exercise.id, exercise]));
+  const exerciseById = buildExerciseIndex(exercises);
 
   return (
     <div className="space-y-4">
@@ -36,12 +46,7 @@ export function SessionDetail({ session, exercises, units }: SessionDetailProps)
           })}
         </p>
         <p className="mt-1 text-xs text-slate-500">
-          Упражнений: {session.exercises.length} · Подходов выполнено:{' '}
-          {session.exercises.reduce(
-            (total, workoutExercise) =>
-              total + workoutExercise.sets.filter((workoutSet) => workoutSet.isCompleted).length,
-            0,
-          )}
+          Упражнений: {session.exercises.length} · Подходов выполнено: {countCompletedSets(session)}
         </p>
       </div>
 
