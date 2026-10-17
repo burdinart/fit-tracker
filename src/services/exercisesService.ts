@@ -67,6 +67,38 @@ export async function deleteCustomExercise(exerciseId: string): Promise<void> {
   }
 }
 
+/** Поля пользовательского упражнения, доступные для редактирования (snake_case — колонки БД). */
+export interface ExerciseUpdates {
+  name?: string;
+  muscle_group?: string;
+  equipment?: string;
+  is_shoulder_safe?: boolean;
+  is_knee_safe?: boolean;
+  is_lower_back_safe?: boolean;
+}
+
+/**
+ * Обновляет пользовательское упражнение в глобальной базе Supabase.
+ * RLS-политика «Users can update own custom exercises» разрешает UPDATE
+ * только строк, где created_by === auth.uid() — базовые упражнения защищены на уровне базы.
+ */
+export async function updateCustomExercise(
+  exerciseId: string,
+  updates: ExerciseUpdates,
+): Promise<void> {
+  const { error } = await supabase
+    .from('exercises')
+    .update(updates)
+    .eq('id', exerciseId);
+
+  if (error) {
+    console.error('Ошибка при обновлении упражнения:', error);
+    throw new Error(
+      'Не удалось обновить упражнение. Возможно, у вас нет прав или это базовое упражнение.',
+    );
+  }
+}
+
 /**
  * Фильтрует упражнения по активным травмам пользователя:
  * возвращает только те, у которых соответствующий флаг безопасности не равен false.

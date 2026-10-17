@@ -13,8 +13,14 @@ import { ExerciseCard } from '../components/workout/ExerciseCard';
 import { RestTimer } from '../components/workout/RestTimer';
 import { InjuryWarning } from '../components/ui/InjuryWarning';
 import { CreateExerciseModal } from '../components/ui/CreateExerciseModal';
+import { EditExerciseModal } from '../components/ui/EditExerciseModal';
 import { useAuthStore } from '../stores/authStore';
-import { deleteCustomExercise, fetchExercises } from '../services/exercisesService';
+import {
+  deleteCustomExercise,
+  fetchExercises,
+  updateCustomExercise,
+  type ExerciseUpdates,
+} from '../services/exercisesService';
 import { getSafeExercises, isExerciseSafe } from '../utils/exerciseFilter';
 import { getTotalVolume, formatVolume } from '../utils/analytics';
 import { buildExerciseIndex } from '../utils/registry';
@@ -104,9 +110,49 @@ export function WorkoutPage({ exercises, onExercisesChange, onOpenExerciseStats 
   const [showCreateModal, setShowCreateModal] = useState(false);
   /** ID удаляемого упражнения (для спиннера/блокировки кнопки, ШАГ удаления). */
   const [deletingExerciseId, setDeletingExerciseId] = useState<string | null>(null);
+  /** Упражнение, открытое в модалке редактирования (ШАГ редактирования). */
+  const [editingExercise, setEditingExercise] = useState<Exercise | null>(null);
 
   /** Текущий пользователь — нужен для проверки авторства кастомного упражнения. */
   const currentUser = useAuthStore((state) => state.user);
+
+  /** Проверка авторства: кнопки редактирования/удаления видны только для своих кастомных упражнений. */
+  function isOwnedByCurrentUser(exercise: Exercise): boolean {
+    return (
+      exercise.isCustom === true &&
+      exercise.createdBy != null &&
+      exercise.createdBy === currentUser?.id
+    );
+  }
+
+  /**
+   * Сохранение изменений пользовательского упражнения:
+   * сначала UPDATE в Supabase (RLS разрешает только свои строки),
+   * затем мгновенное обновление локального списка через onExercisesChange.
+   */
+  async function handleSaveExercise(
+    exercise: Exercise,
+    updates: ExerciseUpdates,
+  ): Promise<void> {
+    await updateCustomExercise(exercise.id, updates);
+    const updatedList = exercises.map((item) =>
+      item.id === exercise.id
+        ? {
+            ...item,
+            name: updates.name ?? item.name,
+            muscleGroup:
+              (updates.muscle_group as Exercise['muscleGroup'] | undefined) ??
+              item.muscleGroup,
+            equipment:
+              (updates.equipment as Exercise['equipment'] | undefined) ?? item.equipment,
+            isShoulderSafe: updates.is_shoulder_safe ?? item.isShoulderSafe,
+            isKneeSafe: updates.is_knee_safe ?? item.isKneeSafe,
+            isLowerBackSafe: updates.is_lower_back_safe ?? item.isLowerBackSafe,
+          }
+        : item,
+    );
+    onExercisesChange(updatedList);
+  }
 
   /**
    * Полное удаление пользовательского упражнения из глобальной БД (Supabase).
@@ -134,38 +180,56 @@ export function WorkoutPage({ exercises, onExercisesChange, onOpenExerciseStats 
     }
   };
 
-  /** Кнопка-корзина: видна только для своих пользовательских упражнений (не для базовых). */
-  function renderDeleteButton(exercise: Exercise): ReactElement | null {
-    const isCurrentUserOwner =
-      exercise.isCustom === true &&
-      exercise.createdBy != null &&
-      exercise.createdBy === currentUser?.id;
-    if (!isCurrentUserOwner) {
+  /** Кнопки редактирования и удаления: видны только для своих пользовательских упражнений (не для базовых). */
+  function renderExerciseActions(exercise: Exercise): ReactElement | null {
+    if (!isOwnedByCurrentUser(exercise)) {
       return null;
     }
     const isDeleting = deletingExerciseId === exercise.id;
     return (
-      <button
-        type="button"
-        onClick={() => void handleDeleteExercise(exercise)}
-        disabled={isDeleting}
-        className="min-h-[44px] min-w-[44px] rounded-full p-2 text-red-500 transition-colors hover:bg-red-100 dark:hover:bg-red-900/30 disabled:opacity-50"
-        aria-label={`Удалить упражнение ${exercise.name} из базы`}
-        title="Удалить из базы"
-      >
-        {isDeleting ? (
-          <span className="inline-block h-5 w-5 animate-spin rounded-full border-2 border-red-500 border-t-transparent" />
-        ) : (
+      <div className="flex gap-1">
+        {/* Кнопка редактирования */}
+        <button
+          type="button"
+          onClick={() => setEditingExercise(exercise)}
+          disabled={isDeleting}
+          className="min-h-[44px] min-w-[44px] rounded-full p-2 text-blue-500 transition-colors hover:bg-blue-100 dark:hover:bg-blue-900/30 disabled:opacity-50"
+          aria-label={`Редактировать упражнение ${exercise.name}`}
+          title="Редактировать"
+        >
           <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
               strokeWidth={2}
-              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+              d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
             />
           </svg>
-        )}
-      </button>
+        </button>
+
+        {/* Кнопка удаления */}
+        <button
+          type="button"
+          onClick={() => void handleDeleteExercise(exercise)}
+          disabled={isDeleting}
+          className="min-h-[44px] min-w-[44px] rounded-full p-2 text-red-500 transition-colors hover:bg-red-100 dark:hover:bg-red-900/30 disabled:opacity-50"
+          aria-label={`Удалить упражнение ${exercise.name} из базы`}
+          title="Удалить из базы"
+        >
+          {isDeleting ? (
+            <span className="inline-block h-5 w-5 animate-spin rounded-full border-2 border-red-500 border-t-transparent" />
+          ) : (
+            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+              />
+            </svg>
+          )}
+        </button>
+      </div>
     );
   };
 
@@ -333,7 +397,7 @@ export function WorkoutPage({ exercises, onExercisesChange, onOpenExerciseStats 
                     </p>
                   </div>
                   <div className="ml-2 flex shrink-0 items-center gap-1">
-                    {renderDeleteButton(exercise)}
+                    {renderExerciseActions(exercise)}
                     {onOpenExerciseStats !== undefined && (
                       <button
                         type="button"
@@ -410,7 +474,7 @@ export function WorkoutPage({ exercises, onExercisesChange, onOpenExerciseStats 
                           >
                             {isAdded ? '✓' : '+'}
                           </button>
-                          {renderDeleteButton(exercise)}
+                          {renderExerciseActions(exercise)}
                         </div>
                         <div className="mt-2">
                           <InjuryWarning exercise={exercise} injuries={injuries} allExercises={exercises} />
@@ -548,6 +612,18 @@ export function WorkoutPage({ exercises, onExercisesChange, onOpenExerciseStats 
           <CreateExerciseModal
             onClose={() => setShowCreateModal(false)}
             onCreated={refreshExercises}
+          />
+        )}
+
+        {/* Модалка редактирования пользовательского упражнения */}
+        {editingExercise && (
+          <EditExerciseModal
+            exercise={editingExercise}
+            isOpen
+            onClose={() => setEditingExercise(null)}
+            onSave={async (updates) => {
+              await handleSaveExercise(editingExercise, updates);
+            }}
           />
         )}
       </main>
