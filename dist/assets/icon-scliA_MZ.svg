@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Иконка FitTracker: гантель на тёмном фоне (#0f172a). -->
+  <rect width="512" height="512" rx="112" fill="#0f172a"/>
+  <g fill="#38bdf8">
+    <!-- гриф -->
+    <rect x="150" y="240" width="212" height="32" rx="16"/>
+    <!-- левые блины -->
+    <rect x="96" y="196" width="44" height="120" rx="14"/>
+    <rect x="56" y="220" width="32" height="72" rx="12"/>
+    <!-- правые блины -->
+    <rect x="372" y="196" width="44" height="120" rx="14"/>
+    <rect x="424" y="220" width="32" height="72" rx="12"/>
+  </g>
+</svg>

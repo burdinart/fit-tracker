@@ -1,0 +1,1 @@
+function e(e){let t=Math.max(0,Math.floor(e)),n=Math.floor(t/60),r=t%60;return`${String(n).padStart(2,`0`)}:${String(r).padStart(2,`0`)}`}function t(e,t){return t===`lbs`?`${Math.round(e*2.2046226218*10)/10} lbs`:`${e} кг`}export{t as n,e as t};

@@ -16,3 +16,9 @@ create policy "Users can update own custom exercises" on public.exercises
 
 create policy "Users can delete own custom exercises" on public.exercises
   for delete using (auth.uid() = created_by);
+
+-- Политика чтения: все упражнения (базовые + пользовательские) видны авторизованным.
+-- Postgres не поддерживает "create policy if not exists", поэтому сначала drop, затем create.
+drop policy if exists "Exercises are viewable by everyone" on public.exercises;
+create policy "Exercises are viewable by everyone" on public.exercises
+  for select using (true);
