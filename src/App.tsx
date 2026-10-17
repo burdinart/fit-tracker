@@ -95,7 +95,7 @@ function App() {
   // Идёт начальная проверка сессии — показываем спиннер вместо «мигания» AuthPage.
   if (isLoading) {
     return (
-      <div className="flex min-h-dvh items-center justify-center bg-slate-900 text-slate-400">
+      <div className="flex min-h-dvh items-center justify-center bg-white text-slate-500 dark:bg-slate-900 dark:text-slate-400">
         <div className="animate-pulse text-lg">Загрузка…</div>
       </div>
     );

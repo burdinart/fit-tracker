@@ -191,7 +191,7 @@ export function CreatePlanModal({ exercises, editingPlanId, onClose, onSaved }: 
           <button
             type="button"
             onClick={onClose}
-            className="min-h-[44px] min-w-[44px] rounded-lg text-xl text-slate-500 dark:text-slate-400 transition hover:bg-slate-200 dark:bg-slate-700 hover:text-white"
+            className="min-h-[44px] min-w-[44px] rounded-lg text-xl text-slate-500 transition hover:bg-slate-200 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-white"
             aria-label="Закрыть"
           >
             ✕
@@ -285,7 +285,7 @@ export function CreatePlanModal({ exercises, editingPlanId, onClose, onSaved }: 
                             <button
                               type="button"
                               onClick={() => handleAddRow(exercise)}
-                              className="min-h-[48px] w-full rounded-lg px-3 py-2 text-left text-sm text-slate-800 dark:text-slate-200 transition hover:bg-slate-50 dark:bg-slate-800"
+                              className="min-h-[48px] w-full rounded-lg px-3 py-2 text-left text-sm text-slate-800 dark:text-slate-200 transition hover:bg-slate-50 dark:hover:bg-slate-800"
                             >
                               <span className="font-medium">{exercise.name}</span>
                               <span className="ml-2 text-xs text-slate-500">
@@ -318,7 +318,7 @@ export function CreatePlanModal({ exercises, editingPlanId, onClose, onSaved }: 
                               type="button"
                               onClick={() => handleMoveRow(index, -1)}
                               disabled={index === 0}
-                              className="min-h-[44px] min-w-[44px] rounded-lg text-slate-500 dark:text-slate-400 transition hover:bg-slate-50 dark:bg-slate-800 disabled:opacity-30"
+                              className="min-h-[44px] min-w-[44px] rounded-lg text-slate-500 dark:text-slate-400 transition hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-30"
                               aria-label="Выше"
                             >
                               ↑
@@ -327,7 +327,7 @@ export function CreatePlanModal({ exercises, editingPlanId, onClose, onSaved }: 
                               type="button"
                               onClick={() => handleMoveRow(index, 1)}
                               disabled={index === rows.length - 1}
-                              className="min-h-[44px] min-w-[44px] rounded-lg text-slate-500 dark:text-slate-400 transition hover:bg-slate-50 dark:bg-slate-800 disabled:opacity-30"
+                              className="min-h-[44px] min-w-[44px] rounded-lg text-slate-500 dark:text-slate-400 transition hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-30"
                               aria-label="Ниже"
                             >
                               ↓
@@ -335,7 +335,7 @@ export function CreatePlanModal({ exercises, editingPlanId, onClose, onSaved }: 
                             <button
                               type="button"
                               onClick={() => handleRemoveRow(index)}
-                              className="min-h-[44px] min-w-[44px] rounded-lg text-slate-500 dark:text-slate-400 transition hover:bg-slate-50 dark:bg-slate-800 hover:text-rose-600 dark:text-rose-400"
+                              className="min-h-[44px] min-w-[44px] rounded-lg text-slate-500 dark:text-slate-400 transition hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-rose-600 dark:text-rose-400"
                               aria-label={`Удалить ${row.exerciseName} из плана`}
                             >
                               🗑️
@@ -393,7 +393,7 @@ export function CreatePlanModal({ exercises, editingPlanId, onClose, onSaved }: 
           <button
             type="button"
             onClick={onClose}
-            className="min-h-[56px] flex-1 rounded-xl border border-slate-300 dark:border-slate-600 text-base font-semibold text-slate-700 dark:text-slate-300 transition hover:bg-slate-200 dark:bg-slate-700"
+            className="min-h-[56px] flex-1 rounded-xl border border-slate-300 dark:border-slate-600 text-base font-semibold text-slate-700 dark:text-slate-300 transition hover:bg-slate-200 dark:hover:bg-slate-700"
           >
             Отмена
           </button>

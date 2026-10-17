@@ -123,7 +123,7 @@ export function ExerciseStatsPage({ exerciseId, exercises, onBack }: ExerciseSta
           <button
             type="button"
             onClick={onBack}
-            className="min-h-[48px] min-w-[48px] shrink-0 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-lg font-bold text-slate-800 dark:text-slate-200 transition hover:bg-slate-200 dark:bg-slate-700"
+            className="min-h-[48px] min-w-[48px] shrink-0 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:hover:bg-slate-800 text-lg font-bold text-slate-800 dark:text-slate-200 transition hover:bg-slate-200 dark:hover:bg-slate-700"
             aria-label="Назад"
           >
             ←

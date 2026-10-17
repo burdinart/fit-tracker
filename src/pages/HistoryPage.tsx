@@ -147,7 +147,7 @@ export function HistoryPage({ exercises, onOpenExerciseStats }: HistoryPageProps
               <button
                 type="button"
                 onClick={() => setOpenSessionId(null)}
-                className="min-h-[44px] min-w-[44px] rounded-lg text-xl text-slate-500 dark:text-slate-400 transition hover:bg-slate-200 dark:bg-slate-700 hover:text-slate-900 dark:text-slate-100"
+                className="min-h-[44px] min-w-[44px] rounded-lg text-xl text-slate-500 dark:text-slate-400 transition hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-slate-900 dark:text-slate-100"
                 aria-label="Закрыть"
               >
                 ✕

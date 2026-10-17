@@ -167,7 +167,7 @@ export function PlansPage({ exercises }: PlansPageProps) {
                     <button
                       type="button"
                       onClick={() => openEdit(plan.id)}
-                      className="min-h-[56px] min-w-[56px] rounded-xl border border-slate-300 dark:border-slate-600 text-lg transition hover:bg-slate-200 dark:bg-slate-700"
+                      className="min-h-[56px] min-w-[56px] rounded-xl border border-slate-300 dark:border-slate-600 text-lg transition hover:bg-slate-200 dark:hover:bg-slate-700"
                       aria-label={`Редактировать план ${plan.name}`}
                       title="Редактировать"
                     >
@@ -176,7 +176,7 @@ export function PlansPage({ exercises }: PlansPageProps) {
                     <button
                       type="button"
                       onClick={() => setPendingDelete(plan)}
-                      className="min-h-[56px] min-w-[56px] rounded-xl border border-slate-300 dark:border-slate-600 text-lg transition hover:bg-slate-200 dark:bg-slate-700 hover:text-rose-600 dark:text-rose-400"
+                      className="min-h-[56px] min-w-[56px] rounded-xl border border-slate-300 dark:border-slate-600 text-lg transition hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-rose-600 dark:text-rose-400"
                       aria-label={`Удалить план ${plan.name}`}
                       title="Удалить"
                     >
@@ -225,7 +225,7 @@ export function PlansPage({ exercises }: PlansPageProps) {
               <button
                 type="button"
                 onClick={() => setPendingDelete(null)}
-                className="min-h-[56px] flex-1 rounded-xl border border-slate-300 dark:border-slate-600 font-semibold text-slate-700 dark:text-slate-300 transition hover:bg-slate-200 dark:bg-slate-700"
+                className="min-h-[56px] flex-1 rounded-xl border border-slate-300 dark:border-slate-600 font-semibold text-slate-700 dark:text-slate-300 transition hover:bg-slate-200 dark:hover:bg-slate-700"
               >
                 Отмена
               </button>

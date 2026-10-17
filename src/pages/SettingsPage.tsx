@@ -203,7 +203,7 @@ export function SettingsPage() {
               step={5}
               value={restDraft}
               onChange={(event) => setRestDraft(event.target.value)}
-              className="w-full rounded-xl border border-slate-600 bg-slate-900 px-3 py-3 text-base tabular-nums outline-none focus:border-emerald-500"
+              className="min-h-[48px] w-full rounded-xl border border-slate-300 bg-white px-3 py-3 text-base tabular-nums text-slate-900 outline-none transition-colors focus:border-emerald-500 focus:ring-2 focus:ring-blue-500 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
             />
             <span className="mt-1 block text-xs text-slate-500">
               Минимум {MIN_REST_SEC} секунд. Используется для новых подходов и таймера отдыха.

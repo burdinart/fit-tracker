@@ -27,7 +27,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
   override render(): ReactNode {
     if (this.state.error !== null) {
       return (
-        <main className="flex min-h-dvh flex-col items-center justify-center gap-4 bg-slate-900 px-6 text-center text-slate-100">
+        <main className="flex min-h-dvh flex-col items-center justify-center gap-4 bg-white px-6 text-center text-slate-900 dark:bg-slate-900 dark:text-slate-100">
           <h1 className="text-xl font-bold">Что-то пошло не так 😔</h1>
           <p className="max-w-md text-sm text-slate-400">{this.state.error.message}</p>
           <button

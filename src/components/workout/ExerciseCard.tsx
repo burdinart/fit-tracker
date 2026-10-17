@@ -168,7 +168,7 @@ export function ExerciseCard({
             <button
               type="button"
               onClick={() => onOpenStats(exercise.id)}
-              className="min-h-[44px] rounded-lg px-2 py-1 text-base text-slate-500 dark:text-slate-400 transition hover:bg-slate-200 dark:bg-slate-700 hover:text-emerald-600 dark:text-emerald-400"
+              className="min-h-[44px] rounded-lg px-2 py-1 text-base text-slate-500 dark:text-slate-400 transition hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-emerald-600 dark:text-emerald-400"
               aria-label={`Открыть статистику упражнения ${exercise.name}`}
               title="Статистика упражнения"
             >
@@ -178,7 +178,7 @@ export function ExerciseCard({
           <button
             type="button"
             onClick={() => onRemove(exercise.id)}
-            className="min-h-[44px] rounded-lg px-2 py-1 text-base text-slate-500 dark:text-slate-400 transition hover:bg-slate-200 dark:bg-slate-700 hover:text-rose-600 dark:text-rose-400"
+            className="min-h-[44px] rounded-lg px-2 py-1 text-base text-slate-500 dark:text-slate-400 transition hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-rose-600 dark:text-rose-400"
             aria-label={`Удалить упражнение ${exercise.name} из тренировки`}
             title="Удалить упражнение"
           >

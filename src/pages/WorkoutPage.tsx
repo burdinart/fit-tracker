@@ -362,7 +362,7 @@ export function WorkoutPage({ exercises, onExercisesChange, onOpenExerciseStats 
             <button
               type="button"
               onClick={() => void useAuthStore.getState().signOut()}
-              className="shrink-0 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 transition hover:bg-slate-200 dark:bg-slate-700 hover:text-white"
+              className="shrink-0 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-200 hover:text-slate-900 dark:hover:bg-slate-700 dark:hover:text-white dark:text-slate-300"
             >
               Выйти
             </button>
@@ -457,7 +457,7 @@ export function WorkoutPage({ exercises, onExercisesChange, onOpenExerciseStats 
                             <button
                               type="button"
                               onClick={() => onOpenExerciseStats(exercise.id)}
-                              className="min-h-[44px] min-w-[44px] rounded-lg text-lg text-slate-500 dark:text-slate-400 transition hover:bg-slate-200 dark:bg-slate-700 hover:text-emerald-600 dark:text-emerald-400"
+                              className="min-h-[44px] min-w-[44px] rounded-lg text-lg text-slate-500 dark:text-slate-400 transition hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-emerald-600 dark:text-emerald-400"
                               aria-label={`Статистика упражнения ${exercise.name}`}
                               title="Статистика"
                             >
@@ -668,7 +668,7 @@ export function WorkoutPage({ exercises, onExercisesChange, onOpenExerciseStats 
                 <button
                   type="button"
                   onClick={() => setPendingUnsafe(null)}
-                  className="min-h-[48px] flex-1 rounded-xl border border-slate-300 dark:border-slate-600 text-sm font-medium text-slate-700 dark:text-slate-300 transition hover:bg-slate-200 dark:bg-slate-700"
+                  className="min-h-[48px] flex-1 rounded-xl border border-slate-300 dark:border-slate-600 text-sm font-medium text-slate-700 dark:text-slate-300 transition hover:bg-slate-200 dark:hover:bg-slate-700"
                 >
                   Отмена
                 </button>

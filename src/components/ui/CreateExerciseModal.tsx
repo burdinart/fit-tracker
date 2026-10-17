@@ -99,7 +99,7 @@ export function CreateExerciseModal({ onClose, onCreated }: CreateExerciseModalP
             type="button"
             onClick={onClose}
             aria-label="Закрыть"
-            className="min-h-[44px] min-w-[44px] rounded-xl text-2xl leading-none text-slate-500 dark:text-slate-400 transition hover:bg-slate-200 dark:bg-slate-700 hover:text-white"
+            className="min-h-[44px] min-w-[44px] rounded-xl text-2xl leading-none text-slate-500 transition hover:bg-slate-200 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-white"
           >
             ×
           </button>
@@ -165,7 +165,7 @@ export function CreateExerciseModal({ onClose, onCreated }: CreateExerciseModalP
             return (
               <label
                 key={key}
-                className="flex min-h-[44px] cursor-pointer items-center gap-3 rounded-xl px-1 text-sm text-slate-800 dark:text-slate-200 hover:bg-slate-200/60 dark:bg-slate-700/50"
+                className="flex min-h-[44px] cursor-pointer items-center gap-3 rounded-xl px-1 text-sm text-slate-800 hover:bg-slate-200/60 dark:text-slate-200 dark:hover:bg-slate-700/50"
               >
                 <input
                   type="checkbox"
@@ -189,7 +189,7 @@ export function CreateExerciseModal({ onClose, onCreated }: CreateExerciseModalP
           <button
             type="button"
             onClick={onClose}
-            className="min-h-[48px] flex-1 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-200 dark:bg-slate-700/60 text-sm font-semibold text-slate-800 dark:text-slate-200 transition hover:bg-slate-200 dark:bg-slate-700"
+            className="min-h-[48px] flex-1 rounded-xl border border-slate-300 bg-slate-200 text-sm font-semibold text-slate-800 transition hover:bg-slate-300 dark:border-slate-600 dark:bg-slate-700/60 dark:text-slate-200 dark:hover:bg-slate-700"
           >
             Отмена
           </button>
