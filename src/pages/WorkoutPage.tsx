@@ -31,6 +31,8 @@ function countCompletedSets(session: WorkoutSession): number {
 export interface WorkoutPageProps {
   /** Справочник упражнений (моковый или из реального источника). */
   exercises: Exercise[];
+  /** Колбэк обновления справочника после создания пользовательского упражнения. */
+  onExercisesChange: (exercises: Exercise[]) => void;
 }
 
 /**
@@ -41,7 +43,7 @@ export interface WorkoutPageProps {
  * «Показать ограниченные» с предупреждением InjuryWarning и подтверждением добавления.
  * Во время тренировки — шапка с секундомером, карточки упражнений и таймер отдыха снизу.
  */
-export function WorkoutPage({ exercises }: WorkoutPageProps) {
+export function WorkoutPage({ exercises, onExercisesChange }: WorkoutPageProps) {
   // Селекторы состояния стора.
   const isWorkoutActive = useWorkoutStore((state) => state.isWorkoutActive);
   const sessionStartTime = useWorkoutStore((state) => state.sessionStartTime);
@@ -93,6 +95,20 @@ export function WorkoutPage({ exercises }: WorkoutPageProps) {
   const [showRestricted, setShowRestricted] = useState(false);
   /** Какое упражнение требует подтверждения добавления (открыт InjuryWarning-модал). */
   const [pendingUnsafe, setPendingUnsafe] = useState<string | null>(null);
+  /** Открыта ли модалка создания пользовательского упражнения (ШАГ 4). */
+  const [showCreateModal, setShowCreateModal] = useState(false);
+
+  /** Обновлённый справочник после создания упражнения — поднимаем в App через пропс. */
+  const refreshExercises = (): void => {
+    setShowCreateModal(false);
+    void fetchExercises()
+      .then((rows) => {
+        if (rows.length > 0) onExercisesChange(rows);
+      })
+      .catch((error) => {
+        console.warn('[WorkoutPage] Не удалось обновить справочник упражнений:', error);
+      });
+  };
 
   /** Завершает тренировку: stopWorkout() → сохранение в историю → облако → модалка с итогами. */
   const handleEndWorkout = (): void => {
@@ -203,6 +219,15 @@ export function WorkoutPage({ exercises }: WorkoutPageProps) {
               );
             })}
           </ul>
+
+          {/* Кнопка создания пользовательского упражнения (ШАГ 4) */}
+          <button
+            type="button"
+            onClick={() => setShowCreateModal(true)}
+            className="mt-3 min-h-[48px] w-full rounded-xl border border-dashed border-emerald-500/60 px-4 py-2.5 text-sm font-semibold text-emerald-300 transition hover:bg-emerald-950/40"
+          >
+            ＋ Создать своё упражнение
+          </button>
 
           {/* Скрытые по травмам упражнения — доступны только после подтверждения */}
           {unsafe.length > 0 && (
@@ -375,6 +400,14 @@ export function WorkoutPage({ exercises }: WorkoutPageProps) {
               </div>
             </div>
           </div>
+        )}
+
+        {/* Модалка создания пользовательского упражнения (ШАГ 4) */}
+        {showCreateModal && (
+          <CreateExerciseModal
+            onClose={() => setShowCreateModal(false)}
+            onCreated={refreshExercises}
+          />
         )}
       </main>
     );

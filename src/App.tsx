@@ -9,6 +9,9 @@ const WorkoutPage = lazy(() =>
 const HistoryPage = lazy(() =>
   import('./pages/HistoryPage').then((m) => ({ default: m.HistoryPage })),
 );
+const StatsPage = lazy(() =>
+  import('./pages/StatsPage').then((m) => ({ default: m.StatsPage })),
+);
 const SettingsPage = lazy(() =>
   import('./pages/SettingsPage').then((m) => ({ default: m.SettingsPage })),
 );
@@ -35,7 +38,7 @@ import { mockExercises } from './data/mockExercises';
  *    не авторизован — экран AuthPage; авторизован — основное приложение.
  * 2) Справочник упражнений загружается из БД (exercisesService.fetchExercises),
  *    при ошибке сети — фолбэк на моковые данные.
- * 3) Простая вкладочная навигация без роутера: state «workout | history | settings».
+ * 3) Простая вкладочная навигация без роутера: state «workout | history | stats | settings».
  * Тёмная тема обеспечивается внутри страниц (bg-slate-900, text-slate-100).
  */
 function App() {
@@ -89,9 +92,11 @@ function App() {
     <>
       <Suspense fallback={<PageLoader />}>
         {activeTab === 'workout' ? (
-          <WorkoutPage exercises={exercises} />
+          <WorkoutPage exercises={exercises} onExercisesChange={setExercises} />
         ) : activeTab === 'history' ? (
           <HistoryPage exercises={exercises} />
+        ) : activeTab === 'stats' ? (
+          <StatsPage exercises={exercises} />
         ) : (
           <SettingsPage />
         )}
