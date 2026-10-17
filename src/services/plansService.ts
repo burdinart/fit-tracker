@@ -1,6 +1,7 @@
 import { supabase } from '../lib/supabase';
 import type { WorkoutPlan, WorkoutPlanExercise } from '../types';
 import { useAuthStore } from '../stores/authStore';
+import { toExercise } from './exercisesService';
 
 /**
  * Сервис работы с планами тренировок (workout_plans + workout_plan_exercises).
@@ -65,7 +66,18 @@ export async function fetchPlanWithExercises(planId: string): Promise<{
 
   if (exercisesError) throw exercisesError;
 
-  return { plan, exercises: exercises ?? [] };
+  // Join «exercise:exercises(*)» возвращает snake_case-строку БД —
+  // конвертируем её в доменный Exercise (muscleGroup, isShoulderSafe и т.д.).
+  const mapped: WorkoutPlanExercise[] = (exercises ?? []).map((row) => {
+    const { exercise: exerciseRow, ...rest } = row;
+    return {
+      ...rest,
+      notes: rest.notes ?? null,
+      exercise: exerciseRow != null ? toExercise(exerciseRow) : undefined,
+    };
+  });
+
+  return { plan, exercises: mapped };
 }
 
 /**

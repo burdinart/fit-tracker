@@ -28,6 +28,7 @@ export function toExercise(row: ExerciseRow): Exercise {
     alternatives: row.alternatives ?? undefined,
     createdBy: row.created_by ?? null,
     isCustom: row.is_custom ?? false,
+    displayOrder: row.display_order ?? undefined,
   };
 }
 
@@ -35,7 +36,11 @@ export function toExercise(row: ExerciseRow): Exercise {
 export async function fetchExercises(): Promise<Exercise[]> {
   try {
     // select('*') возвращает и системные (created_by = null), и кастомные упражнения.
-    const { data, error } = await supabase.from('exercises').select('*');
+    const { data, error } = await supabase
+      .from('exercises')
+      .select('*')
+      .order('display_order', { ascending: true })
+      .order('created_at', { ascending: true });
     if (error) throw error;
     if (!data || data.length === 0) {
       console.warn('[exercisesService] Таблица exercises пуста — используем моковые данные.');
@@ -96,6 +101,37 @@ export async function updateCustomExercise(
     throw new Error(
       'Не удалось обновить упражнение. Возможно, у вас нет прав или это базовое упражнение.',
     );
+  }
+}
+
+/**
+ * Сохраняет новый порядок упражнений (drag-and-drop) в БД.
+ * Обновляет display_order для каждого id по его позиции в массиве.
+ * Записи отправляются батчем одним запросом.
+ */
+export async function updateExerciseOrder(exerciseIds: string[]): Promise<void> {
+  if (exerciseIds.length === 0) return;
+
+  // RLS разрешает UPDATE только своих кастомных упражнений, поэтому обновляем
+  // только их — базовые упражнения справочника остаются на исходных позициях.
+  const { error } = await supabase.rpc('update_exercises_order', {
+    exercise_ids: exerciseIds,
+  });
+
+  if (!error) return;
+
+  // Фолбэк без хранимой функции: батч UPDATE по каждому своему упражнению.
+  console.warn('[exercisesService] RPC недоступна, сохраняем порядок поштучно:', error);
+  for (let index = 0; index < exerciseIds.length; index += 1) {
+    const { error: rowError } = await supabase
+      .from('exercises')
+      .update({ display_order: index })
+      .eq('id', exerciseIds[index])
+      .eq('is_custom', true);
+    if (rowError) {
+      console.error('Ошибка при сохранении порядка упражнений:', rowError);
+      throw new Error('Не удалось сохранить порядок упражнений.');
+    }
   }
 }
 

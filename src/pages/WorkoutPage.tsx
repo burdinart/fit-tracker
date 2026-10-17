@@ -1,5 +1,20 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { ReactElement } from 'react';
+import {
+  DndContext,
+  KeyboardSensor,
+  PointerSensor,
+  closestCenter,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  SortableContext,
+  arrayMove,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
 import type { Exercise, WorkoutPlan, WorkoutSession } from '../types';
 import { useWorkoutStore } from '../stores/workoutStore';
 import { useHistoryStore } from '../stores/historyStore';
@@ -10,6 +25,7 @@ import { useStartWorkoutFromPlan } from '../hooks/useStartWorkoutFromPlan';
 import { fetchUserPlans } from '../services/plansService';
 import { WorkoutHeader } from '../components/workout/WorkoutHeader';
 import { ExerciseCard } from '../components/workout/ExerciseCard';
+import { SortableExerciseCard } from '../components/workout/SortableExerciseCard';
 import { RestTimer } from '../components/workout/RestTimer';
 import { InjuryWarning } from '../components/ui/InjuryWarning';
 import { CreateExerciseModal } from '../components/ui/CreateExerciseModal';
@@ -19,6 +35,7 @@ import {
   deleteCustomExercise,
   fetchExercises,
   updateCustomExercise,
+  updateExerciseOrder,
   type ExerciseUpdates,
 } from '../services/exercisesService';
 import { getSafeExercises, isExerciseSafe } from '../utils/exerciseFilter';
@@ -112,6 +129,36 @@ export function WorkoutPage({ exercises, onExercisesChange, onOpenExerciseStats 
   const [deletingExerciseId, setDeletingExerciseId] = useState<string | null>(null);
   /** Упражнение, открытое в модалке редактирования (ШАГ редактирования). */
   const [editingExercise, setEditingExercise] = useState<Exercise | null>(null);
+
+  // --- Drag-and-drop порядок упражнений (@dnd-kit) ---
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  );
+
+  /**
+   * Обработчик окончания перетаскивания: переставляет элемент в локальном списке
+   * (мгновенный отклик UI) и сохраняет новый порядок display_order в Supabase.
+   */
+  function handleReorder(sectionList: Exercise[], event: DragEndEvent): void {
+    const { active, over } = event;
+    if (over === null || active.id === over.id) return;
+    const oldIndex = sectionList.findIndex((item) => item.id === active.id);
+    const newIndex = sectionList.findIndex((item) => item.id === over.id);
+    if (oldIndex === -1 || newIndex === -1) return;
+    const reorderedSection = arrayMove(sectionList, oldIndex, newIndex);
+
+    // Собираем полный новый порядок справочника: секция получает новые позиции,
+    // остальные упражнения сохраняют относительный порядок после неё.
+    const sectionIds = new Set(sectionList.map((item) => item.id));
+    const others = exercises.filter((item) => !sectionIds.has(item.id));
+    const reordered = [...reorderedSection, ...others];
+    onExercisesChange(reordered);
+
+    void updateExerciseOrder(reordered.map((item) => item.id)).catch((error: unknown) => {
+      console.warn('[WorkoutPage] Не удалось сохранить порядок упражнений:', error);
+    });
+  }
 
   /** Текущий пользователь — нужен для проверки авторства кастомного упражнения. */
   const currentUser = useAuthStore((state) => state.user);
@@ -381,56 +428,72 @@ export function WorkoutPage({ exercises, onExercisesChange, onOpenExerciseStats 
             </div>
           )}
 
-          {/* Список безопасных упражнений */}
-          <ul className="space-y-2">
-            {safe.map((exercise) => {
-              const isAdded = addedIds.has(exercise.id);
-              return (
-                <li
-                  key={exercise.id}
-                  className="flex items-center justify-between gap-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-4 py-3"
-                >
-                  <div className="min-w-0">
-                    <p className="truncate font-medium">{exercise.name}</p>
-                    <p className="text-xs text-slate-500 dark:text-slate-400">
-                      {muscleGroupLabels[exercise.muscleGroup]}
-                    </p>
-                  </div>
-                  <div className="ml-2 flex shrink-0 items-center gap-1">
-                    {renderExerciseActions(exercise)}
-                    {onOpenExerciseStats !== undefined && (
-                      <button
-                        type="button"
-                        onClick={() => onOpenExerciseStats(exercise.id)}
-                        className="min-h-[44px] min-w-[44px] rounded-lg text-lg text-slate-500 dark:text-slate-400 transition hover:bg-slate-200 dark:bg-slate-700 hover:text-emerald-600 dark:text-emerald-400"
-                        aria-label={`Статистика упражнения ${exercise.name}`}
-                        title="Статистика"
-                      >
-                        📊
-                      </button>
-                    )}
-                    <button
-                      type="button"
-                      onClick={() => handleAddAttempt(exercise.id)}
-                      disabled={isAdded}
-                      className="min-h-[56px] min-w-[56px] rounded-xl bg-emerald-700 text-2xl font-bold text-white transition hover:bg-emerald-600 active:scale-[0.96] disabled:opacity-40 disabled:active:scale-100"
-                      aria-label={`Добавить ${exercise.name} в тренировку`}
+          {/* Список безопасных упражнений (с drag-and-drop порядка) */}
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={(event) => handleReorder(safe, event)}
+          >
+            <SortableContext items={safe.map((e) => e.id)} strategy={verticalListSortingStrategy}>
+              <ul className="space-y-2">
+                {safe.map((exercise) => {
+                  const isAdded = addedIds.has(exercise.id);
+                  return (
+                    <SortableExerciseCard
+                      key={exercise.id}
+                      id={exercise.id}
+                      className="rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-4 py-3"
                     >
-                      {isAdded ? '✓' : '+'}
-                    </button>
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
+                      <div className="flex min-w-0 flex-1 items-center justify-between gap-3">
+                        <div className="min-w-0">
+                          <p className="truncate font-medium">{exercise.name}</p>
+                          <p className="text-xs text-slate-500 dark:text-slate-400">
+                            {muscleGroupLabels[exercise.muscleGroup]}
+                          </p>
+                        </div>
+                        <div className="ml-2 flex shrink-0 items-center gap-1">
+                          {renderExerciseActions(exercise)}
+                          {onOpenExerciseStats !== undefined && (
+                            <button
+                              type="button"
+                              onClick={() => onOpenExerciseStats(exercise.id)}
+                              className="min-h-[44px] min-w-[44px] rounded-lg text-lg text-slate-500 dark:text-slate-400 transition hover:bg-slate-200 dark:bg-slate-700 hover:text-emerald-600 dark:text-emerald-400"
+                              aria-label={`Статистика упражнения ${exercise.name}`}
+                              title="Статистика"
+                            >
+                              📊
+                            </button>
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => handleAddAttempt(exercise.id)}
+                            disabled={isAdded}
+                            className="min-h-[56px] min-w-[56px] rounded-xl bg-emerald-700 text-2xl font-bold text-white transition hover:bg-emerald-600 active:scale-[0.96] disabled:opacity-40 disabled:active:scale-100"
+                            aria-label={`Добавить ${exercise.name} в тренировку`}
+                          >
+                            {isAdded ? '✓' : '+'}
+                          </button>
+                        </div>
+                      </div>
+                    </SortableExerciseCard>
+                  );
+                })}
+              </ul>
+            </SortableContext>
+          </DndContext>
 
           {/* Кнопка создания пользовательского упражнения (ШАГ 4) */}
           <button
             type="button"
             onClick={() => setShowCreateModal(true)}
-            className="mt-3 min-h-[48px] w-full rounded-xl border border-dashed border-emerald-500/60 px-4 py-2.5 text-sm font-semibold text-emerald-700 dark:text-emerald-300 transition hover:bg-emerald-100 dark:bg-emerald-950/40"
+            className="mt-4 mb-4 w-full whitespace-nowrap rounded-xl border-2 border-dashed border-slate-400 px-4 py-3 text-base font-semibold text-slate-600 transition-colors hover:border-blue-500 hover:text-blue-500 min-h-[56px] dark:border-slate-500 dark:text-slate-400 dark:hover:border-blue-400 dark:hover:text-blue-400"
           >
-            ＋ Создать своё упражнение
+            <span className="flex items-center justify-center gap-2">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+              Создать своё упражнение
+            </span>
           </button>
 
           {/* Скрытые по травмам упражнения — доступны только после подтверждения */}
@@ -447,47 +510,61 @@ export function WorkoutPage({ exercises, onExercisesChange, onOpenExerciseStats 
                   : `Показать ограниченные (${unsafe.length})`}
               </button>
               {showRestricted && (
-                <ul className="mt-2 space-y-2">
-                  {unsafe.map(({ exercise, reasons }) => {
-                    const isAdded = addedIds.has(exercise.id);
-                    return (
-                      <li
-                        key={exercise.id}
-                        className="rounded-xl border border-rose-500/60 bg-slate-50 dark:bg-slate-800 px-4 py-3"
-                      >
-                        <div className="flex items-center justify-between gap-3">
-                          <div className="min-w-0">
-                            <p className="truncate font-medium">
-                              <span aria-hidden="true">⚠️ </span>
-                              {exercise.name}
-                            </p>
-                            <p className="text-xs text-slate-500 dark:text-slate-400">
-                              {muscleGroupLabels[exercise.muscleGroup]}
-                            </p>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => handleAddAttempt(exercise.id)}
-                            disabled={isAdded}
-                            className="ml-2 min-h-[56px] min-w-[56px] shrink-0 rounded-xl bg-rose-700 text-2xl font-bold text-white transition hover:bg-rose-600 active:scale-[0.96] disabled:opacity-40 disabled:active:scale-100"
-                            aria-label={`Добавить ${exercise.name} (потребует подтверждения)`}
+                <DndContext
+                  sensors={sensors}
+                  collisionDetection={closestCenter}
+                  onDragEnd={(event) => handleReorder(unsafe.map((u) => u.exercise), event)}
+                >
+                  <SortableContext
+                    items={unsafe.map((u) => u.exercise.id)}
+                    strategy={verticalListSortingStrategy}
+                  >
+                    <ul className="mt-2 space-y-2">
+                      {unsafe.map(({ exercise, reasons }) => {
+                        const isAdded = addedIds.has(exercise.id);
+                        return (
+                          <SortableExerciseCard
+                            key={exercise.id}
+                            id={exercise.id}
+                            className="rounded-xl border border-rose-500/60 bg-slate-50 dark:bg-slate-800 px-4 py-3"
                           >
-                            {isAdded ? '✓' : '+'}
-                          </button>
-                          {renderExerciseActions(exercise)}
-                        </div>
-                        <div className="mt-2">
-                          <InjuryWarning exercise={exercise} injuries={injuries} allExercises={exercises} />
-                        </div>
-                        {/* Причина в data-атрибуте не нужна — reasons уже в тексте плашки;
-                            оставляем переменную задействованной для aria-описания строки */}
-                        <span className="sr-only" id={`unsafe-${exercise.id}`}>
-                          Небезопасно при травме: {reasons.join(', ')}
-                        </span>
-                      </li>
-                    );
-                  })}
-                </ul>
+                            <div className="min-w-0 flex-1">
+                              <div className="flex items-center justify-between gap-3">
+                                <div className="min-w-0">
+                                  <p className="truncate font-medium">
+                                    <span aria-hidden="true">⚠️ </span>
+                                    {exercise.name}
+                                  </p>
+                                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                                    {muscleGroupLabels[exercise.muscleGroup]}
+                                  </p>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => handleAddAttempt(exercise.id)}
+                                  disabled={isAdded}
+                                  className="ml-2 min-h-[56px] min-w-[56px] shrink-0 rounded-xl bg-rose-700 text-2xl font-bold text-white transition hover:bg-rose-600 active:scale-[0.96] disabled:opacity-40 disabled:active:scale-100"
+                                  aria-label={`Добавить ${exercise.name} (потребует подтверждения)`}
+                                >
+                                  {isAdded ? '✓' : '+'}
+                                </button>
+                                {renderExerciseActions(exercise)}
+                              </div>
+                              <div className="mt-2">
+                                <InjuryWarning exercise={exercise} injuries={injuries} allExercises={exercises} />
+                              </div>
+                              {/* Причина в data-атрибуте не нужна — reasons уже в тексте плашки;
+                                  оставляем переменную задействованной для aria-описания строки */}
+                              <span className="sr-only" id={`unsafe-${exercise.id}`}>
+                                Небезопасно при травме: {reasons.join(', ')}
+                              </span>
+                            </div>
+                          </SortableExerciseCard>
+                        );
+                      })}
+                    </ul>
+                  </SortableContext>
+                </DndContext>
               )}
             </div>
           )}

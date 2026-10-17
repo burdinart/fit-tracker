@@ -43,6 +43,8 @@ export interface Exercise {
   createdBy?: string | null;
   /** Пользовательское упражнение (создано из приложения, а не из справочника). */
   isCustom?: boolean;
+  /** Порядок отображения в списке (колонка display_order, ставится при drag-and-drop). */
+  displayOrder?: number;
 }
 
 /** Один рабочий подход в упражнении. */

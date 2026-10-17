@@ -89,6 +89,8 @@ export interface Database {
           created_by: string | null;
           /** Пользовательское ли упражнение (создано кем-то из приложений). */
           is_custom: boolean;
+          /** Порядок отображения в списке (drag-and-drop, миграция 008). */
+          display_order: number | null;
           created_at: string;
         };
         Insert: {
@@ -102,6 +104,7 @@ export interface Database {
           alternatives?: string[] | null;
           created_by?: string | null;
           is_custom?: boolean;
+          display_order?: number | null;
           created_at?: string;
         };
         Update: {
@@ -115,6 +118,7 @@ export interface Database {
           alternatives?: string[] | null;
           created_by?: string | null;
           is_custom?: boolean;
+          display_order?: number | null;
           created_at?: string;
         };
         Relationships: [];
@@ -248,7 +252,16 @@ export interface Database {
           rest_time_sec?: number;
           notes?: string | null;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            /** FK workout_plan_exercises.exercise_id -> exercises.id (миграция 007). */
+            foreignKeyName: 'workout_plan_exercises_exercise_id_fkey';
+            columns: ['exercise_id'];
+            isOneToOne: false;
+            referencedRelation: 'exercises';
+            referencedColumns: ['id'];
+          },
+        ];
       };
       // Push-подписки (Web Push). Таблица создается SQL-миграцией; типы свободные.
       push_subscriptions: {
@@ -259,7 +272,13 @@ export interface Database {
       };
     };
     Views: Record<string, never>;
-    Functions: Record<string, never>;
+    Functions: {
+      /** Сохранение порядка упражнений (миграция 008): массив id в новом порядке. */
+      update_exercises_order: {
+        Args: { exercise_ids: string[] };
+        Returns: undefined;
+      };
+    };
     Enums: Record<string, never>;
     CompositeTypes: Record<string, never>;
   };
