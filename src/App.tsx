@@ -9,6 +9,9 @@ const WorkoutPage = lazy(() =>
 const HistoryPage = lazy(() =>
   import('./pages/HistoryPage').then((m) => ({ default: m.HistoryPage })),
 );
+const PlansPage = lazy(() =>
+  import('./pages/PlansPage').then((m) => ({ default: m.PlansPage })),
+);
 const StatsPage = lazy(() =>
   import('./pages/StatsPage').then((m) => ({ default: m.StatsPage })),
 );
@@ -93,6 +96,8 @@ function App() {
       <Suspense fallback={<PageLoader />}>
         {activeTab === 'workout' ? (
           <WorkoutPage exercises={exercises} onExercisesChange={setExercises} />
+        ) : activeTab === 'plans' ? (
+          <PlansPage exercises={exercises} />
         ) : activeTab === 'history' ? (
           <HistoryPage exercises={exercises} />
         ) : activeTab === 'stats' ? (

@@ -185,6 +185,71 @@ export interface Database {
         };
         Relationships: [];
       };
+      // Планы тренировок (шаблоны). Таблица создается SQL-миграцией 007_workout_plans.sql.
+      workout_plans: {
+        Row: {
+          id: string;
+          user_id: string;
+          name: string;
+          description: string | null;
+          day_of_week: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id?: string;
+          name: string;
+          description?: string | null;
+          day_of_week?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          name?: string;
+          description?: string | null;
+          day_of_week?: string | null;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      // Упражнения внутри плана тренировки.
+      workout_plan_exercises: {
+        Row: {
+          id: string;
+          plan_id: string;
+          exercise_id: string;
+          order: number;
+          target_sets: number;
+          target_reps: number;
+          target_weight: number;
+          rest_time_sec: number;
+          notes: string | null;
+        };
+        Insert: {
+          id?: string;
+          plan_id: string;
+          exercise_id: string;
+          order?: number;
+          target_sets?: number;
+          target_reps?: number;
+          target_weight?: number;
+          rest_time_sec?: number;
+          notes?: string | null;
+        };
+        Update: {
+          id?: string;
+          plan_id?: string;
+          exercise_id?: string;
+          order?: number;
+          target_sets?: number;
+          target_reps?: number;
+          target_weight?: number;
+          rest_time_sec?: number;
+          notes?: string | null;
+        };
+        Relationships: [];
+      };
       // Push-подписки (Web Push). Таблица создается SQL-миграцией; типы свободные.
       push_subscriptions: {
         Row: Record<string, unknown>;

@@ -1,5 +1,5 @@
 /** Идентификаторы вкладок нижней навигации. */
-export type TabId = 'workout' | 'history' | 'stats' | 'settings';
+export type TabId = 'workout' | 'plans' | 'history' | 'stats' | 'settings';
 
 /** Пропсы нижней навигации. */
 export interface BottomNavProps {
@@ -12,14 +12,15 @@ export interface BottomNavProps {
 /** Конфигурация вкладок: id, подпись, иконка. */
 const tabs: { id: TabId; label: string; icon: string }[] = [
   { id: 'workout', label: 'Тренировка', icon: '🏋️' },
+  { id: 'plans', label: 'Планы', icon: '📋' },
   { id: 'history', label: 'История', icon: '📜' },
   { id: 'stats', label: 'Статистика', icon: '📈' },
   { id: 'settings', label: 'Настройки', icon: '⚙️' },
 ];
 
 /**
- * Нижняя панель навигации (app-shell стиль PWA): четыре вкладки —
- * «Тренировка», «История», «Статистика» и «Настройки». Переключение — простой state в App
+ * Нижняя панель навигации (app-shell стиль PWA): пять вкладок —
+ * «Тренировка», «Планы», «История», «Статистика» и «Настройки». Переключение — простой state в App
  * (роутер на этом этапе не нужен). Фиксирована снизу, затемнённый фон,
  * безопасная зона iPhone (env(safe-area-inset-bottom)).
  */

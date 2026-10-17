@@ -147,6 +147,15 @@ export function ExerciseCard({
         </div>
       )}
 
+      {/* Целевые параметры из плана тренировки (если сессия начата по плану) */}
+      {workoutExercise.targets != null && (
+        <p className="mb-2 text-xs text-slate-500">
+          Цель: {workoutExercise.targets.targetSets}×{workoutExercise.targets.targetReps}
+          {workoutExercise.targets.targetWeight > 0 &&
+            ` @ ${workoutExercise.targets.targetWeight}кг`}
+        </p>
+      )}
+
       {/* Таблица подходов */}
       <table className="w-full border-collapse text-left">
         <thead>

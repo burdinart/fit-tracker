@@ -63,6 +63,16 @@ export interface WorkoutSet {
   restTimeSec: number;
 }
 
+/** Целевые параметры упражнения, взятые из плана тренировок. */
+export interface ExerciseTargets {
+  /** Плановое количество подходов. */
+  targetSets: number;
+  /** Плановое количество повторений в подходе. */
+  targetReps: number;
+  /** Целевой рабочий вес, кг. */
+  targetWeight: number;
+}
+
 /** Упражнение внутри тренировочной сессии (с набором подходов). */
 export interface WorkoutExercise {
   /** Ссылка на id упражнения из справочника. */
@@ -71,6 +81,48 @@ export interface WorkoutExercise {
   sets: WorkoutSet[];
   /** Заметки к упражнению (техника, самочувствие). */
   notes?: string;
+  /** Целевые параметры из плана тренировки (если сессия начата по плану). */
+  targets?: ExerciseTargets;
+}
+
+/** План тренировки (шаблон), таблица Supabase «workout_plans». */
+export interface WorkoutPlan {
+  /** Уникальный идентификатор плана. */
+  id: string;
+  /** Идентификатор владельца плана. */
+  user_id: string;
+  /** Название плана. */
+  name: string;
+  /** Описание плана (опционально). */
+  description?: string | null;
+  /** День недели для расписания ('monday'…'sunday' или null). */
+  day_of_week?: string | null;
+  /** Метка времени создания (ISO-строка). */
+  created_at: string;
+}
+
+/** Упражнение внутри плана тренировки, таблица Supabase «workout_plan_exercises». */
+export interface WorkoutPlanExercise {
+  /** Уникальный идентификатор строки плана. */
+  id: string;
+  /** Ссылка на план. */
+  plan_id: string;
+  /** Ссылка на упражнение из справочника. */
+  exercise_id: string;
+  /** Порядок упражнения в плане. */
+  order: number;
+  /** Целевое количество подходов. */
+  target_sets: number;
+  /** Целевое количество повторений. */
+  target_reps: number;
+  /** Целевой рабочий вес, кг. */
+  target_weight: number;
+  /** Плановое время отдыха после подхода, сек. */
+  rest_time_sec: number;
+  /** Заметки (опционально). */
+  notes?: string | null;
+  /** Упражнение из справочника (результат join «exercise:exercises(*)»). */
+  exercise?: Exercise;
 }
 
 /** Завершённая или текущая тренировочная сессия. */

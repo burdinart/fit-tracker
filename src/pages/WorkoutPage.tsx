@@ -1,10 +1,12 @@
-import { useMemo, useState } from 'react';
-import type { Exercise, WorkoutSession } from '../types';
+import { useEffect, useMemo, useState } from 'react';
+import type { Exercise, WorkoutPlan, WorkoutSession } from '../types';
 import { useWorkoutStore } from '../stores/workoutStore';
 import { useHistoryStore } from '../stores/historyStore';
 import { useUserStore } from '../stores/userStore';
 import { useWorkoutTimer } from '../hooks/useWorkoutTimer';
 import { useRestTimer } from '../hooks/useRestTimer';
+import { useStartWorkoutFromPlan } from '../hooks/useStartWorkoutFromPlan';
+import { fetchUserPlans } from '../services/plansService';
 import { WorkoutHeader } from '../components/workout/WorkoutHeader';
 import { ExerciseCard } from '../components/workout/ExerciseCard';
 import { RestTimer } from '../components/workout/RestTimer';
@@ -98,6 +100,26 @@ export function WorkoutPage({ exercises, onExercisesChange }: WorkoutPageProps) 
   /** Открыта ли модалка создания пользовательского упражнения (ШАГ 4). */
   const [showCreateModal, setShowCreateModal] = useState(false);
 
+  // Планы тренировок для секции быстрого старта (ШАГ 6).
+  const [plans, setPlans] = useState<WorkoutPlan[]>([]);
+  const { startFromPlan, startingPlanId, error: planStartError } = useStartWorkoutFromPlan();
+
+  // Загрузка планов при открытии экрана выбора упражнений.
+  useEffect(() => {
+    if (isWorkoutActive) return;
+    let cancelled = false;
+    fetchUserPlans()
+      .then((loaded) => {
+        if (!cancelled) setPlans(loaded);
+      })
+      .catch((error: unknown) => {
+        console.warn('[WorkoutPage] Не удалось загрузить планы:', error);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [isWorkoutActive]);
+
   /** Обновлённый справочник после создания упражнения — поднимаем в App через пропс. */
   const refreshExercises = (): void => {
     setShowCreateModal(false);
@@ -189,6 +211,41 @@ export function WorkoutPage({ exercises, onExercisesChange }: WorkoutPageProps) 
             <p className="mb-4 rounded-xl border border-slate-700 bg-slate-800/60 px-4 py-2.5 text-xs text-slate-400">
               ⚠️ Фильтр травм активен — измените ограничения во вкладке «Настройки»
             </p>
+          )}
+
+          {/* Секция «Мои планы»: быстрый старт тренировки по сохранённому плану (ШАГ 6) */}
+          {plans.length > 0 && (
+            <div className="mb-5">
+              <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-slate-400">
+                Мои планы
+              </h2>
+              {planStartError !== null && (
+                <p className="mb-2 rounded-xl border border-rose-500/60 bg-rose-950/40 px-3 py-2 text-sm text-rose-300">
+                  {planStartError}
+                </p>
+              )}
+              <ul className="-mx-4 flex snap-x gap-3 overflow-x-auto px-4 pb-2">
+                {plans.map((plan) => (
+                  <li
+                    key={plan.id}
+                    className="w-64 shrink-0 snap-start rounded-xl border border-slate-700 bg-slate-800 p-3"
+                  >
+                    <p className="truncate font-semibold">{plan.name}</p>
+                    {plan.description != null && plan.description !== '' && (
+                      <p className="mt-0.5 line-clamp-2 text-xs text-slate-400">{plan.description}</p>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => void startFromPlan(plan.id)}
+                      disabled={startingPlanId !== null}
+                      className="mt-2 min-h-[44px] w-full rounded-lg bg-emerald-600 text-sm font-bold text-white transition hover:bg-emerald-500 active:scale-[0.99] disabled:opacity-50"
+                    >
+                      {startingPlanId === plan.id ? 'Загрузка…' : '▶ Начать'}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
           )}
 
           {/* Список безопасных упражнений */}

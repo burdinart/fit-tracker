@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { UserInjuries, WorkoutExercise, WorkoutSession, WorkoutSet } from '../types';
+import type { ExerciseTargets, UserInjuries, WorkoutExercise, WorkoutSession, WorkoutSet } from '../types';
 import { useUserStore, getInjuriesFromProfile } from './userStore';
 import { useAuthStore } from './authStore';
 import {
@@ -54,8 +54,8 @@ export interface WorkoutState {
   startWorkout: () => void;
   /** Завершает тренировку, возвращает готовую сессию и сбрасывает состояние. */
   stopWorkout: () => WorkoutSession;
-  /** Добавляет упражнение в сессию с одним пустым подходом. */
-  addExercise: (exerciseId: string) => void;
+  /** Добавляет упражнение в сессию с одним пустым подходом (опционально — цели из плана). */
+  addExercise: (exerciseId: string, targets?: ExerciseTargets) => void;
   /** Удаляет упражнение из сессии по его id. */
   removeExercise: (exerciseId: string) => void;
   /** Добавляет новый подход в указанное упражнение. */
@@ -234,7 +234,7 @@ export const useWorkoutStore = create<WorkoutState>()(
         return session;
       },
 
-      addExercise: (exerciseId: string) => {
+      addExercise: (exerciseId: string, targets?: ExerciseTargets) => {
         const { currentExercises, defaultRestTime } = get();
         // Не дублируем упражнение, если оно уже есть в сессии.
         if (currentExercises.some((e) => e.exerciseId === exerciseId)) {
@@ -243,7 +243,12 @@ export const useWorkoutStore = create<WorkoutState>()(
         set({
           currentExercises: [
             ...currentExercises,
-            { exerciseId, sets: [createEmptySet(defaultRestTime)] },
+            {
+              exerciseId,
+              sets: [createEmptySet(defaultRestTime)],
+              // Целевые параметры из плана (если тренировка начата по плану).
+              ...(targets !== undefined ? { targets } : {}),
+            },
           ],
         });
       },
