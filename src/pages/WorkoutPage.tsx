@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import type { ReactElement } from 'react';
 import type { Exercise, WorkoutPlan, WorkoutSession } from '../types';
 import { useWorkoutStore } from '../stores/workoutStore';
 import { useHistoryStore } from '../stores/historyStore';
@@ -13,7 +14,7 @@ import { RestTimer } from '../components/workout/RestTimer';
 import { InjuryWarning } from '../components/ui/InjuryWarning';
 import { CreateExerciseModal } from '../components/ui/CreateExerciseModal';
 import { useAuthStore } from '../stores/authStore';
-import { fetchExercises } from '../services/exercisesService';
+import { deleteCustomExercise, fetchExercises } from '../services/exercisesService';
 import { getSafeExercises, isExerciseSafe } from '../utils/exerciseFilter';
 import { getTotalVolume, formatVolume } from '../utils/analytics';
 import { buildExerciseIndex } from '../utils/registry';
@@ -101,6 +102,72 @@ export function WorkoutPage({ exercises, onExercisesChange, onOpenExerciseStats 
   const [pendingUnsafe, setPendingUnsafe] = useState<string | null>(null);
   /** Открыта ли модалка создания пользовательского упражнения (ШАГ 4). */
   const [showCreateModal, setShowCreateModal] = useState(false);
+  /** ID удаляемого упражнения (для спиннера/блокировки кнопки, ШАГ удаления). */
+  const [deletingExerciseId, setDeletingExerciseId] = useState<string | null>(null);
+
+  /** Текущий пользователь — нужен для проверки авторства кастомного упражнения. */
+  const currentUser = useAuthStore((state) => state.user);
+
+  /**
+   * Полное удаление пользовательского упражнения из глобальной БД (Supabase).
+   * RLS разрешает DELETE только строк с created_by === auth.uid(),
+   * поэтому базовые упражнения защищены на уровне базы; UI-кнопка показывается
+   * только для isCustom && createdBy === user.id. После успеха — мгновенное
+   * обновление локального списка без перезагрузки страницы.
+   */
+  async function handleDeleteExercise(exercise: Exercise): Promise<void> {
+    if (!window.confirm(`Вы уверены, что хотите навсегда удалить упражнение "${exercise.name}"?`)) {
+      return;
+    }
+    setDeletingExerciseId(exercise.id);
+    try {
+      await deleteCustomExercise(exercise.id);
+      // Мгновенно обновляем список упражнений в родителе (App → useState).
+      onExercisesChange(exercises.filter((item) => item.id !== exercise.id));
+    } catch (err) {
+      console.error('[WorkoutPage] Ошибка удаления упражнения:', err);
+      alert(
+        err instanceof Error ? err.message : 'Ошибка при удалении. Проверьте консоль.',
+      );
+    } finally {
+      setDeletingExerciseId(null);
+    }
+  };
+
+  /** Кнопка-корзина: видна только для своих пользовательских упражнений (не для базовых). */
+  function renderDeleteButton(exercise: Exercise): ReactElement | null {
+    const isCurrentUserOwner =
+      exercise.isCustom === true &&
+      exercise.createdBy != null &&
+      exercise.createdBy === currentUser?.id;
+    if (!isCurrentUserOwner) {
+      return null;
+    }
+    const isDeleting = deletingExerciseId === exercise.id;
+    return (
+      <button
+        type="button"
+        onClick={() => void handleDeleteExercise(exercise)}
+        disabled={isDeleting}
+        className="min-h-[44px] min-w-[44px] rounded-full p-2 text-red-500 transition-colors hover:bg-red-100 dark:hover:bg-red-900/30 disabled:opacity-50"
+        aria-label={`Удалить упражнение ${exercise.name} из базы`}
+        title="Удалить из базы"
+      >
+        {isDeleting ? (
+          <span className="inline-block h-5 w-5 animate-spin rounded-full border-2 border-red-500 border-t-transparent" />
+        ) : (
+          <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+            />
+          </svg>
+        )}
+      </button>
+    );
+  };
 
   // Планы тренировок для секции быстрого старта (ШАГ 6).
   const [plans, setPlans] = useState<WorkoutPlan[]>([]);
@@ -266,6 +333,7 @@ export function WorkoutPage({ exercises, onExercisesChange, onOpenExerciseStats 
                     </p>
                   </div>
                   <div className="ml-2 flex shrink-0 items-center gap-1">
+                    {renderDeleteButton(exercise)}
                     {onOpenExerciseStats !== undefined && (
                       <button
                         type="button"
@@ -342,6 +410,7 @@ export function WorkoutPage({ exercises, onExercisesChange, onOpenExerciseStats 
                           >
                             {isAdded ? '✓' : '+'}
                           </button>
+                          {renderDeleteButton(exercise)}
                         </div>
                         <div className="mt-2">
                           <InjuryWarning exercise={exercise} injuries={injuries} allExercises={exercises} />

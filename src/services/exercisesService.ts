@@ -49,6 +49,25 @@ export async function fetchExercises(): Promise<Exercise[]> {
 }
 
 /**
+ * Удаляет пользовательское упражнение из глобальной базы Supabase.
+ * RLS-политика «Users can delete own custom exercises» разрешает удаление
+ * только строк, где created_by === auth.uid() — базовые упражнения удалить нельзя.
+ */
+export async function deleteCustomExercise(exerciseId: string): Promise<void> {
+  const { error } = await supabase
+    .from('exercises')
+    .delete()
+    .eq('id', exerciseId);
+
+  if (error) {
+    console.error('Ошибка при удалении упражнения:', error);
+    throw new Error(
+      'Не удалось удалить упражнение. Возможно, у вас нет прав или это базовое упражнение.',
+    );
+  }
+}
+
+/**
  * Фильтрует упражнения по активным травмам пользователя:
  * возвращает только те, у которых соответствующий флаг безопасности не равен false.
  * Логика «безопасно/небезопасно» живёт в utils/exerciseFilter — здесь тонкая обёртка.
