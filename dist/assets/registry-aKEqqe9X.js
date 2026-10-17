@@ -1,1 +1,0 @@
-function e(e){let t=new Map;for(let n of e)t.set(n.id,n);return t}function t(e,t,n=`Упражнение`){return e.get(t)?.name??n}export{t as n,e as t};
