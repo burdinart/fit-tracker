@@ -2,6 +2,8 @@ import { useState } from 'react';
 import type { Exercise, MuscleGroup, UserInjuries, WorkoutExercise, WorkoutSet } from '../../types';
 import { muscleGroupLabels } from '../../utils/labels';
 import { isExerciseSafe } from '../../utils/exerciseFilter';
+import { analyzeProgression, type ProgressTrend } from '../../utils/progression';
+import { useHistoryStore } from '../../stores/historyStore';
 import { InjuryWarning } from '../ui/InjuryWarning';
 
 /** Пропсы карточки упражнения в активной тренировке. */
@@ -22,6 +24,8 @@ export interface ExerciseCardProps {
   userInjuries: UserInjuries;
   /** Полный справочник — передаётся в InjuryWarning для показа альтернатив. */
   allExercises?: Exercise[];
+  /** Открыть детальную статистику упражнения (ШАГ 4). */
+  onOpenStats?: (exerciseId: string) => void;
 }
 
 /** Иконка-эмодзи для группы мышц. */
@@ -33,6 +37,13 @@ const muscleGroupIcons: Record<MuscleGroup, string> = {
   arms: '💪',
   core: '🧱',
   cardio: '❤️',
+};
+
+/** Цветовые стили плашки рекомендации по тренду прогрессии. */
+const trendBannerStyles: Record<ProgressTrend, string> = {
+  up: 'border-emerald-600/60 bg-emerald-950/40 text-emerald-300',
+  stable: 'border-amber-600/50 bg-amber-950/30 text-amber-300',
+  down: 'border-rose-600/60 bg-rose-950/40 text-rose-300',
 };
 
 /** Числовое значение ввода веса: пустая строка → 0. */
@@ -62,10 +73,33 @@ export function ExerciseCard({
   onRemove,
   userInjuries,
   allExercises,
+  onOpenStats,
 }: ExerciseCardProps) {
   /** Локальные «строковые» значения полей ввода (нужны для пустого поля и десятичных кг). */
   const [weightDrafts, setWeightDrafts] = useState<Record<string, string>>({});
   const [repsDrafts, setRepsDrafts] = useState<Record<string, string>>({});
+
+  // Умная прогрессия (ШАГ 3): анализ последних тренировок с этим упражнением
+  // из локального historyStore — без запросов к Supabase.
+  const historySessions = useHistoryStore((state) => state.sessions);
+  const progression = analyzeProgression(exercise.id, historySessions);
+
+  /** Применяет рекомендуемый вес ко всем невыполненным подходам упражнения. */
+  const applyRecommendation = (): void => {
+    for (const workoutSet of workoutExercise.sets) {
+      if (!workoutSet.isCompleted && workoutSet.weight !== progression.recommendedWeight) {
+        onUpdateSet(exercise.id, workoutSet.id, { weight: progression.recommendedWeight });
+      }
+    }
+    // Сбрасываем черновики ввода, чтобы поля показали новое значение.
+    setWeightDrafts((prev) => {
+      const next = { ...prev };
+      for (const workoutSet of workoutExercise.sets) {
+        delete next[workoutSet.id];
+      }
+      return next;
+    });
+  };
 
   // Определяем опасное для пользователя упражнение через общий фильтр травм.
   const isUnsafeForUser = !isExerciseSafe(exercise, userInjuries);
@@ -129,16 +163,52 @@ export function ExerciseCard({
             </p>
           </div>
         </div>
-        <button
-          type="button"
-          onClick={() => onRemove(exercise.id)}
-          className="min-h-[44px] rounded-lg px-2 py-1 text-base text-slate-400 transition hover:bg-slate-700 hover:text-rose-400"
-          aria-label={`Удалить упражнение ${exercise.name} из тренировки`}
-          title="Удалить упражнение"
-        >
-          🗑️
-        </button>
+        <div className="flex shrink-0 items-start">
+          {onOpenStats !== undefined && (
+            <button
+              type="button"
+              onClick={() => onOpenStats(exercise.id)}
+              className="min-h-[44px] rounded-lg px-2 py-1 text-base text-slate-400 transition hover:bg-slate-700 hover:text-emerald-400"
+              aria-label={`Открыть статистику упражнения ${exercise.name}`}
+              title="Статистика упражнения"
+            >
+              📊
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={() => onRemove(exercise.id)}
+            className="min-h-[44px] rounded-lg px-2 py-1 text-base text-slate-400 transition hover:bg-slate-700 hover:text-rose-400"
+            aria-label={`Удалить упражнение ${exercise.name} из тренировки`}
+            title="Удалить упражнение"
+          >
+            🗑️
+          </button>
+        </div>
       </header>
+
+      {/* Плашка умной прогрессии (ШАГ 3): прошлый вес/повторы + рекомендация. */}
+      {progression.sessionsAnalyzed > 0 && progression.lastWeight > 0 && (
+        <div
+          className={`mb-3 flex flex-wrap items-center justify-between gap-2 rounded-xl border px-3 py-2 text-sm ${trendBannerStyles[progression.progressTrend]}`}
+        >
+          <span>
+            💪 Прошлый раз: {progression.lastWeight} кг × {progression.lastReps} повт.
+            {progression.recommendedWeight > 0 &&
+              progression.recommendedWeight !== progression.lastWeight &&
+              ` Рекомендуем: ${progression.recommendedWeight} кг`}
+          </span>
+          {progression.recommendedWeight > 0 && (
+            <button
+              type="button"
+              onClick={applyRecommendation}
+              className="min-h-[44px] rounded-lg bg-slate-900/50 px-3 py-1.5 text-xs font-bold text-white transition hover:bg-slate-900/80 active:scale-[0.97]"
+            >
+              Применить рекомендацию
+            </button>
+          )}
+        </div>
+      )}
 
       {/* Предупреждение о небезопасном упражнении + альтернативы (ничего не рендерит, если безопасно) */}
       {isUnsafeForUser && (

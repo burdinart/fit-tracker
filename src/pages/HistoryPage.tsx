@@ -15,6 +15,8 @@ import { formatTime } from '../utils/format';
 export interface HistoryPageProps {
   /** Справочник упражнений — нужен, чтобы в деталях показать названия. */
   exercises: Exercise[];
+  /** Открыть детальную статистику упражнения (ШАГ 4). */
+  onOpenExerciseStats?: (exerciseId: string) => void;
 }
 
 /**
@@ -23,7 +25,7 @@ export interface HistoryPageProps {
  * тренировок (карточки, новые сверху). Клик по карточке открывает модалку
  * детального просмотра (SessionDetail) с возможностью удалить запись.
  */
-export function HistoryPage({ exercises }: HistoryPageProps) {
+export function HistoryPage({ exercises, onOpenExerciseStats }: HistoryPageProps) {
   const sessions = useHistoryStore((state) => state.sessions);
   const deleteSession = useHistoryStore((state) => state.deleteSession);
   const units = useUserStore((state) => state.profile.units);
@@ -152,7 +154,20 @@ export function HistoryPage({ exercises }: HistoryPageProps) {
               </button>
             </div>
 
-            <SessionDetail session={openSession} exercises={exercises} units={units} />
+            <SessionDetail
+              session={openSession}
+              exercises={exercises}
+              units={units}
+              onOpenExerciseStats={
+                onOpenExerciseStats !== undefined
+                  ? (exerciseId) => {
+                      // Закрываем модалку деталей и открываем статистику упражнения.
+                      setOpenSessionId(null);
+                      onOpenExerciseStats(exerciseId);
+                    }
+                  : undefined
+              }
+            />
 
             {/* Удаление записи истории */}
             <button

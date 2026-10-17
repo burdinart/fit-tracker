@@ -35,6 +35,8 @@ export interface WorkoutPageProps {
   exercises: Exercise[];
   /** Колбэк обновления справочника после создания пользовательского упражнения. */
   onExercisesChange: (exercises: Exercise[]) => void;
+  /** Открыть детальную статистику упражнения (ШАГ 4). */
+  onOpenExerciseStats?: (exerciseId: string) => void;
 }
 
 /**
@@ -45,7 +47,7 @@ export interface WorkoutPageProps {
  * «Показать ограниченные» с предупреждением InjuryWarning и подтверждением добавления.
  * Во время тренировки — шапка с секундомером, карточки упражнений и таймер отдыха снизу.
  */
-export function WorkoutPage({ exercises, onExercisesChange }: WorkoutPageProps) {
+export function WorkoutPage({ exercises, onExercisesChange, onOpenExerciseStats }: WorkoutPageProps) {
   // Селекторы состояния стора.
   const isWorkoutActive = useWorkoutStore((state) => state.isWorkoutActive);
   const sessionStartTime = useWorkoutStore((state) => state.sessionStartTime);
@@ -263,15 +265,28 @@ export function WorkoutPage({ exercises, onExercisesChange }: WorkoutPageProps) 
                       {muscleGroupLabels[exercise.muscleGroup]}
                     </p>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => handleAddAttempt(exercise.id)}
-                    disabled={isAdded}
-                    className="ml-2 min-h-[56px] min-w-[56px] shrink-0 rounded-xl bg-emerald-700 text-2xl font-bold text-white transition hover:bg-emerald-600 active:scale-[0.96] disabled:opacity-40 disabled:active:scale-100"
-                    aria-label={`Добавить ${exercise.name} в тренировку`}
-                  >
-                    {isAdded ? '✓' : '+'}
-                  </button>
+                  <div className="ml-2 flex shrink-0 items-center gap-1">
+                    {onOpenExerciseStats !== undefined && (
+                      <button
+                        type="button"
+                        onClick={() => onOpenExerciseStats(exercise.id)}
+                        className="min-h-[44px] min-w-[44px] rounded-lg text-lg text-slate-400 transition hover:bg-slate-700 hover:text-emerald-400"
+                        aria-label={`Статистика упражнения ${exercise.name}`}
+                        title="Статистика"
+                      >
+                        📊
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => handleAddAttempt(exercise.id)}
+                      disabled={isAdded}
+                      className="min-h-[56px] min-w-[56px] rounded-xl bg-emerald-700 text-2xl font-bold text-white transition hover:bg-emerald-600 active:scale-[0.96] disabled:opacity-40 disabled:active:scale-100"
+                      aria-label={`Добавить ${exercise.name} в тренировку`}
+                    >
+                      {isAdded ? '✓' : '+'}
+                    </button>
+                  </div>
                 </li>
               );
             })}
@@ -498,6 +513,7 @@ export function WorkoutPage({ exercises, onExercisesChange }: WorkoutPageProps) 
                 onRemove={removeExercise}
                 userInjuries={injuries}
                 allExercises={exercises}
+                onOpenStats={onOpenExerciseStats}
               />
             );
           })

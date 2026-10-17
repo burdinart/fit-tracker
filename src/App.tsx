@@ -18,6 +18,9 @@ const StatsPage = lazy(() =>
 const SettingsPage = lazy(() =>
   import('./pages/SettingsPage').then((m) => ({ default: m.SettingsPage })),
 );
+const ExerciseStatsPage = lazy(() =>
+  import('./pages/ExerciseStatsPage').then((m) => ({ default: m.ExerciseStatsPage })),
+);
 
 /** Простой спиннер для Suspense (тёмная тема приложения). */
 function PageLoader() {
@@ -41,12 +44,16 @@ import { mockExercises } from './data/mockExercises';
  *    не авторизован — экран AuthPage; авторизован — основное приложение.
  * 2) Справочник упражнений загружается из БД (exercisesService.fetchExercises),
  *    при ошибке сети — фолбэк на моковые данные.
- * 3) Простая вкладочная навигация без роутера: state «workout | history | stats | settings».
+ * 3) Простая вкладочная навигация без роутера: state «workout | plans | history | stats | settings».
+ *    Детальная статистика упражнения открывается поверх активной вкладки
+ *    (state selectedExerciseId ~ параметр маршрута /exercise-stats/:exerciseId).
  * Тёмная тема обеспечивается внутри страниц (bg-slate-900, text-slate-100).
  */
 function App() {
   const [activeTab, setActiveTab] = useState<TabId>('workout');
   const [exercises, setExercises] = useState<Exercise[]>(mockExercises);
+  /** Id упражнения, детальная статистика которого открыта (null — страница закрыта). */
+  const [selectedExerciseId, setSelectedExerciseId] = useState<string | null>(null);
 
   // Состояния авторизации из authStore.
   const isLoading = useAuthStore((state) => state.isLoading);
@@ -94,19 +101,39 @@ function App() {
   return (
     <>
       <Suspense fallback={<PageLoader />}>
-        {activeTab === 'workout' ? (
-          <WorkoutPage exercises={exercises} onExercisesChange={setExercises} />
+        {selectedExerciseId !== null ? (
+          <ExerciseStatsPage
+            exerciseId={selectedExerciseId}
+            exercises={exercises}
+            onBack={() => setSelectedExerciseId(null)}
+          />
+        ) : activeTab === 'workout' ? (
+          <WorkoutPage
+            exercises={exercises}
+            onExercisesChange={setExercises}
+            onOpenExerciseStats={setSelectedExerciseId}
+          />
         ) : activeTab === 'plans' ? (
           <PlansPage exercises={exercises} />
         ) : activeTab === 'history' ? (
-          <HistoryPage exercises={exercises} />
+          <HistoryPage exercises={exercises} onOpenExerciseStats={setSelectedExerciseId} />
         ) : activeTab === 'stats' ? (
           <StatsPage exercises={exercises} />
         ) : (
           <SettingsPage />
         )}
       </Suspense>
-      <BottomNav activeTab={activeTab} onChange={setActiveTab} />
+      {/* Нижняя навигация скрыта на детальной странице статистики упражнения */}
+      {selectedExerciseId === null && (
+        <BottomNav
+          activeTab={activeTab}
+          onChange={(tab) => {
+            // Переключение вкладки закрывает детальную статистику.
+            setSelectedExerciseId(null);
+            setActiveTab(tab);
+          }}
+        />
+      )}
     </>
   );
 }

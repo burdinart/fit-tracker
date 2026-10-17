@@ -3,6 +3,8 @@ import { persist } from 'zustand/middleware';
 import type { ExerciseTargets, UserInjuries, WorkoutExercise, WorkoutSession, WorkoutSet } from '../types';
 import { useUserStore, getInjuriesFromProfile } from './userStore';
 import { useAuthStore } from './authStore';
+import { useHistoryStore } from './historyStore';
+import { analyzeProgression } from '../utils/progression';
 import {
   supabase,
   type Database,
@@ -240,12 +242,22 @@ export const useWorkoutStore = create<WorkoutState>()(
         if (currentExercises.some((e) => e.exerciseId === exerciseId)) {
           return;
         }
+        // Умная прогрессия (ШАГ 3): первый подход предустанавливаем рекомендуемым весом
+        // из анализа истории (если план не задал свой целевой вес).
+        const firstSet = createEmptySet(defaultRestTime);
+        if (targets === undefined || targets.targetWeight <= 0) {
+          const recommendation = analyzeProgression(exerciseId, useHistoryStore.getState().sessions)
+            .recommendedWeight;
+          if (recommendation > 0) {
+            firstSet.weight = recommendation;
+          }
+        }
         set({
           currentExercises: [
             ...currentExercises,
             {
               exerciseId,
-              sets: [createEmptySet(defaultRestTime)],
+              sets: [firstSet],
               // Целевые параметры из плана (если тренировка начата по плану).
               ...(targets !== undefined ? { targets } : {}),
             },
