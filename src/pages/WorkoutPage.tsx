@@ -665,8 +665,8 @@ export function WorkoutPage({ exercises, onExercisesChange, onOpenExerciseStats 
         )}
       </section>
 
-      {/* Отступ, чтобы последний подход не перекрывался фиксированным таймером отдыха */}
-      {isResting && <div className="h-64 shrink-0" aria-hidden="true" />}
+      {/* Отступ, чтобы последний подход не перекрывался компактным фиксированным таймером отдыха */}
+      {isResting && <div className="h-40 shrink-0" aria-hidden="true" />}
 
       {/* Таймер отдыха — фиксированная плашка внизу экрана, активна после завершения подхода */}
       <RestTimer

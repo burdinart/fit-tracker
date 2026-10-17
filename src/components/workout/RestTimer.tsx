@@ -17,10 +17,11 @@ export interface RestTimerProps {
 }
 
 /**
- * Таймер отдыха между подходами.
- * Фиксированная плашка внизу экрана (fixed bottom-0 left-0 right-0) на amber-фоне,
- * появляется только когда isActive === true.
- * Крупный моноширинный MM:SS, кнопки «+15с» / «−15с» / «Пропустить».
+ * Компактный таймер отдыха между подходами.
+ * Фиксированная плашка внизу экрана (fixed bottom-0 left-0 right-0 z-50) —
+ * расположена НАД нижней навигацией (BottomNav, z-40), чтобы не перекрывать её кнопки.
+ * Появляется только когда isActive === true.
+ * Моноширинный MM:SS (text-4xl), кнопки «−15с» / «Пропустить» / «+15с» в одну строку.
  * Вибрация по окончании выполняется в useRestTimer.
  */
 export function RestTimer({
@@ -38,28 +39,30 @@ export function RestTimer({
   const seconds = timeLeft ?? remainingSec ?? 0;
 
   return (
-    <div className="fixed inset-x-0 bottom-0 left-0 right-0 z-20 border-t border-amber-700 bg-amber-600 px-4 py-4 text-white shadow-[0_-8px_24px_rgba(0,0,0,0.45)]">
-      <div className="mx-auto flex max-w-lg flex-col items-center gap-3">
-        {/* Статус и крупный обратный отсчёт */}
-        <p className="text-sm font-semibold text-white/90">
-          {isFinished ? 'Отдых завершён — следующий подход!' : 'Отдых'}
-        </p>
-        <div
-          className={`font-mono text-6xl font-bold tabular-nums text-white ${
-            isFinished ? 'animate-pulse' : ''
-          }`}
-          role="timer"
-          aria-live="polite"
-        >
-          {formatTime(seconds)}
+    <div className="fixed inset-x-0 bottom-[calc(4rem+env(safe-area-inset-bottom))] z-50 bg-amber-600 px-4 py-3 text-white shadow-[0_-8px_24px_rgba(0,0,0,0.45)]">
+      <div className="mx-auto flex max-w-lg items-center justify-between gap-3">
+        {/* Статус и обратный отсчёт слева */}
+        <div className="text-left">
+          <p className="text-xs font-medium opacity-90">
+            {isFinished ? 'Отдых завершён!' : 'Отдых'}
+          </p>
+          <div
+            className={`font-mono text-3xl font-bold leading-tight tabular-nums text-white ${
+              isFinished ? 'animate-pulse' : ''
+            }`}
+            role="timer"
+            aria-live="polite"
+          >
+            {formatTime(seconds)}
+          </div>
         </div>
 
-        {/* Управление длительностью и пропуск */}
-        <div className="flex w-full items-stretch justify-center gap-3">
+        {/* Управление длительностью и пропуск — в одну строку справа */}
+        <div className="flex items-center justify-end gap-2">
           <button
             type="button"
             onClick={() => onAdjust(-15)}
-            className="min-h-[56px] flex-1 rounded-xl bg-amber-700 px-4 text-lg font-medium text-white transition hover:bg-amber-800 active:scale-[0.98]"
+            className="min-h-[36px] rounded-lg bg-amber-700 px-3 py-1 text-sm font-medium text-white transition hover:bg-amber-800 active:scale-[0.98]"
             aria-label="Уменьшить отдых на 15 секунд"
           >
             −15с
@@ -67,14 +70,14 @@ export function RestTimer({
           <button
             type="button"
             onClick={onSkip}
-            className="min-h-[56px] flex-1 rounded-xl bg-white/15 px-4 text-lg font-semibold text-white ring-1 ring-white/40 transition hover:bg-white/25 active:scale-[0.98]"
+            className="min-h-[36px] rounded-lg bg-white/15 px-3 py-1 text-sm font-semibold text-white ring-1 ring-white/40 transition hover:bg-white/25 active:scale-[0.98]"
           >
             Пропустить
           </button>
           <button
             type="button"
             onClick={() => onAdjust(15)}
-            className="min-h-[56px] flex-1 rounded-xl bg-amber-700 px-4 text-lg font-medium text-white transition hover:bg-amber-800 active:scale-[0.98]"
+            className="min-h-[36px] rounded-lg bg-amber-700 px-3 py-1 text-sm font-medium text-white transition hover:bg-amber-800 active:scale-[0.98]"
             aria-label="Увеличить отдых на 15 секунд"
           >
             +15с
