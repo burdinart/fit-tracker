@@ -19,7 +19,7 @@ export function WorkoutHeader({ elapsedSec, onEnd }: WorkoutHeaderProps) {
         <div>
           <h2 className="text-xl font-bold leading-tight">Тренировка</h2>
           {/* Общий таймер: крупный моноширинный, устойчив к сворачиванию вкладки */}
-          <p className="font-mono text-3xl font-semibold tabular-nums text-emerald-400">
+          <p className="font-mono text-3xl font-semibold tabular-nums text-emerald-600 dark:text-emerald-400">
             {formatTime(elapsedSec)}
           </p>
         </div>

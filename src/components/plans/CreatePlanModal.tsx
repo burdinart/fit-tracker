@@ -169,7 +169,7 @@ export function CreatePlanModal({ exercises, editingPlanId, onClose, onSaved }: 
   );
 
   const inputClass =
-    'min-h-[48px] w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-slate-100 outline-none focus:ring-2 focus:ring-emerald-500';
+    'min-h-[48px] w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-slate-900 dark:text-slate-100 outline-none focus:ring-2 focus:ring-emerald-500';
 
   return (
     <div
@@ -180,18 +180,18 @@ export function CreatePlanModal({ exercises, editingPlanId, onClose, onSaved }: 
       onClick={onClose}
     >
       <div
-        className="flex max-h-[92dvh] w-full max-w-lg flex-col rounded-t-2xl border border-slate-700 bg-slate-800 sm:rounded-2xl"
+        className="flex max-h-[92dvh] w-full max-w-lg flex-col rounded-t-2xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 sm:rounded-2xl"
         onClick={(event) => event.stopPropagation()}
       >
         {/* Шапка модалки */}
-        <header className="flex items-center justify-between border-b border-slate-700 px-4 py-3">
+        <header className="flex items-center justify-between border-b border-slate-300 dark:border-slate-700 px-4 py-3">
           <h2 id="create-plan-title" className="text-lg font-bold">
             {editingPlanId !== null ? 'Редактировать план' : 'Новый план тренировки'}
           </h2>
           <button
             type="button"
             onClick={onClose}
-            className="min-h-[44px] min-w-[44px] rounded-lg text-xl text-slate-400 transition hover:bg-slate-700 hover:text-white"
+            className="min-h-[44px] min-w-[44px] rounded-lg text-xl text-slate-500 dark:text-slate-400 transition hover:bg-slate-200 dark:bg-slate-700 hover:text-white"
             aria-label="Закрыть"
           >
             ✕
@@ -201,12 +201,12 @@ export function CreatePlanModal({ exercises, editingPlanId, onClose, onSaved }: 
         {/* Тело модалки (скроллируемое) */}
         <div className="flex-1 space-y-4 overflow-y-auto px-4 py-4">
           {isLoadingPlan ? (
-            <p className="animate-pulse py-8 text-center text-slate-400">Загрузка плана…</p>
+            <p className="animate-pulse py-8 text-center text-slate-500 dark:text-slate-400">Загрузка плана…</p>
           ) : (
             <>
               {/* Название */}
               <label className="block">
-                <span className="mb-1 block text-sm font-medium text-slate-300">Название плана *</span>
+                <span className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">Название плана *</span>
                 <input
                   type="text"
                   value={name}
@@ -219,7 +219,7 @@ export function CreatePlanModal({ exercises, editingPlanId, onClose, onSaved }: 
 
               {/* Описание */}
               <label className="block">
-                <span className="mb-1 block text-sm font-medium text-slate-300">Описание</span>
+                <span className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">Описание</span>
                 <textarea
                   value={description}
                   onChange={(event) => setDescription(event.target.value)}
@@ -232,7 +232,7 @@ export function CreatePlanModal({ exercises, editingPlanId, onClose, onSaved }: 
 
               {/* День недели */}
               <label className="block">
-                <span className="mb-1 block text-sm font-medium text-slate-300">День недели</span>
+                <span className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">День недели</span>
                 <select
                   value={dayOfWeek}
                   onChange={(event) => {
@@ -253,7 +253,7 @@ export function CreatePlanModal({ exercises, editingPlanId, onClose, onSaved }: 
               {/* Секция упражнений */}
               <section>
                 <div className="mb-2 flex items-center justify-between gap-2">
-                  <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-400">
+                  <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
                     Упражнения ({rows.length})
                   </h3>
                   <button
@@ -267,7 +267,7 @@ export function CreatePlanModal({ exercises, editingPlanId, onClose, onSaved }: 
 
                 {/* Пикер выбора упражнения с поиском */}
                 {showPicker && (
-                  <div className="mb-3 rounded-xl border border-slate-700 bg-slate-900 p-3">
+                  <div className="mb-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 p-3">
                     <input
                       type="search"
                       value={pickerQuery}
@@ -285,7 +285,7 @@ export function CreatePlanModal({ exercises, editingPlanId, onClose, onSaved }: 
                             <button
                               type="button"
                               onClick={() => handleAddRow(exercise)}
-                              className="min-h-[48px] w-full rounded-lg px-3 py-2 text-left text-sm text-slate-200 transition hover:bg-slate-800"
+                              className="min-h-[48px] w-full rounded-lg px-3 py-2 text-left text-sm text-slate-800 dark:text-slate-200 transition hover:bg-slate-50 dark:bg-slate-800"
                             >
                               <span className="font-medium">{exercise.name}</span>
                               <span className="ml-2 text-xs text-slate-500">
@@ -301,7 +301,7 @@ export function CreatePlanModal({ exercises, editingPlanId, onClose, onSaved }: 
 
                 {/* Строки плана */}
                 {rows.length === 0 ? (
-                  <p className="rounded-xl border border-dashed border-slate-700 py-4 text-center text-sm text-slate-500">
+                  <p className="rounded-xl border border-dashed border-slate-300 dark:border-slate-700 py-4 text-center text-sm text-slate-500">
                     Пока пусто — добавьте упражнения кнопкой выше
                   </p>
                 ) : (
@@ -309,7 +309,7 @@ export function CreatePlanModal({ exercises, editingPlanId, onClose, onSaved }: 
                     {rows.map((row, index) => (
                       <li
                         key={`${row.exercise_id}-${index}`}
-                        className="rounded-xl border border-slate-700 bg-slate-900/60 p-3"
+                        className="rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900/60 p-3"
                       >
                         <div className="mb-2 flex items-center justify-between gap-2">
                           <p className="truncate font-medium">{row.exerciseName}</p>
@@ -318,7 +318,7 @@ export function CreatePlanModal({ exercises, editingPlanId, onClose, onSaved }: 
                               type="button"
                               onClick={() => handleMoveRow(index, -1)}
                               disabled={index === 0}
-                              className="min-h-[44px] min-w-[44px] rounded-lg text-slate-400 transition hover:bg-slate-800 disabled:opacity-30"
+                              className="min-h-[44px] min-w-[44px] rounded-lg text-slate-500 dark:text-slate-400 transition hover:bg-slate-50 dark:bg-slate-800 disabled:opacity-30"
                               aria-label="Выше"
                             >
                               ↑
@@ -327,7 +327,7 @@ export function CreatePlanModal({ exercises, editingPlanId, onClose, onSaved }: 
                               type="button"
                               onClick={() => handleMoveRow(index, 1)}
                               disabled={index === rows.length - 1}
-                              className="min-h-[44px] min-w-[44px] rounded-lg text-slate-400 transition hover:bg-slate-800 disabled:opacity-30"
+                              className="min-h-[44px] min-w-[44px] rounded-lg text-slate-500 dark:text-slate-400 transition hover:bg-slate-50 dark:bg-slate-800 disabled:opacity-30"
                               aria-label="Ниже"
                             >
                               ↓
@@ -335,7 +335,7 @@ export function CreatePlanModal({ exercises, editingPlanId, onClose, onSaved }: 
                             <button
                               type="button"
                               onClick={() => handleRemoveRow(index)}
-                              className="min-h-[44px] min-w-[44px] rounded-lg text-slate-400 transition hover:bg-slate-800 hover:text-rose-400"
+                              className="min-h-[44px] min-w-[44px] rounded-lg text-slate-500 dark:text-slate-400 transition hover:bg-slate-50 dark:bg-slate-800 hover:text-rose-600 dark:text-rose-400"
                               aria-label={`Удалить ${row.exerciseName} из плана`}
                             >
                               🗑️
@@ -352,7 +352,7 @@ export function CreatePlanModal({ exercises, editingPlanId, onClose, onSaved }: 
                             ] as const
                           ).map(([label, field, step]) => (
                             <label key={field} className="block">
-                              <span className="mb-1 block text-xs text-slate-400">{label}</span>
+                              <span className="mb-1 block text-xs text-slate-500 dark:text-slate-400">{label}</span>
                               <input
                                 type="number"
                                 inputMode="decimal"
@@ -365,7 +365,7 @@ export function CreatePlanModal({ exercises, editingPlanId, onClose, onSaved }: 
                                     [field]: Number.isFinite(parsed) && parsed >= 0 ? parsed : 0,
                                   } as Partial<PlanExerciseInput>);
                                 }}
-                                className="min-h-[48px] w-full rounded-lg border border-slate-700 bg-slate-900 px-2 py-2 text-center tabular-nums text-slate-100 outline-none focus:ring-2 focus:ring-emerald-500"
+                                className="min-h-[48px] w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 py-2 text-center tabular-nums text-slate-900 dark:text-slate-100 outline-none focus:ring-2 focus:ring-emerald-500"
                               />
                             </label>
                           ))}
@@ -377,7 +377,7 @@ export function CreatePlanModal({ exercises, editingPlanId, onClose, onSaved }: 
               </section>
 
               {error !== null && (
-                <p className="rounded-xl border border-rose-500/60 bg-rose-950/40 px-3 py-2 text-sm text-rose-300">
+                <p className="rounded-xl border border-rose-500/60 bg-rose-950/40 px-3 py-2 text-sm text-rose-700 dark:text-rose-300">
                   {error}
                 </p>
               )}
@@ -387,13 +387,13 @@ export function CreatePlanModal({ exercises, editingPlanId, onClose, onSaved }: 
 
         {/* Футер модалки */}
         <footer
-          className="flex gap-3 border-t border-slate-700 px-4 py-3"
+          className="flex gap-3 border-t border-slate-300 dark:border-slate-700 px-4 py-3"
           style={{ paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom))' }}
         >
           <button
             type="button"
             onClick={onClose}
-            className="min-h-[56px] flex-1 rounded-xl border border-slate-600 text-base font-semibold text-slate-300 transition hover:bg-slate-700"
+            className="min-h-[56px] flex-1 rounded-xl border border-slate-300 dark:border-slate-600 text-base font-semibold text-slate-700 dark:text-slate-300 transition hover:bg-slate-200 dark:bg-slate-700"
           >
             Отмена
           </button>

@@ -82,7 +82,7 @@ export function SessionDetail({ session, exercises, units, onOpenExerciseStats }
                   <button
                     type="button"
                     onClick={() => onOpenExerciseStats(workoutExercise.exerciseId)}
-                    className="rounded-lg px-1.5 py-1 text-base text-slate-400 transition hover:bg-slate-700 hover:text-emerald-400"
+                    className="rounded-lg px-1.5 py-1 text-base text-slate-400 transition hover:bg-slate-700 hover:text-emerald-600 dark:text-emerald-400"
                     aria-label={`Статистика упражнения ${exercise?.name ?? workoutExercise.exerciseId}`}
                     title="Статистика"
                   >
@@ -90,7 +90,7 @@ export function SessionDetail({ session, exercises, units, onOpenExerciseStats }
                   </button>
                 )}
                 {/* Расчётный 1ПМ упражнения в этой тренировке */}
-                <p className="rounded-lg bg-indigo-950/80 px-2.5 py-1 text-right text-xs font-semibold text-indigo-300">
+                <p className="rounded-lg bg-indigo-950/80 px-2.5 py-1 text-right text-xs font-semibold text-indigo-700 dark:text-indigo-300">
                   1ПМ ≈ {best1RM > 0 ? formatWeight(best1RM, units) : '—'}
                 </p>
               </div>
@@ -108,7 +108,7 @@ export function SessionDetail({ session, exercises, units, onOpenExerciseStats }
                     {workoutSet.rpe !== undefined && (
                       <span className="ml-2 text-xs text-slate-500">RPE {workoutSet.rpe}</span>
                     )}
-                    {workoutSet.isCompleted && <span className="ml-2 text-emerald-400">✓</span>}
+                    {workoutSet.isCompleted && <span className="ml-2 text-emerald-600 dark:text-emerald-400">✓</span>}
                   </span>
                 </li>
               ))}

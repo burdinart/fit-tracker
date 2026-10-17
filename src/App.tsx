@@ -33,6 +33,7 @@ function PageLoader() {
 import { BottomNav } from './components/layout/BottomNav';
 import type { TabId } from './components/layout/BottomNav';
 import { useAuthStore } from './stores/authStore';
+import { useThemeStore, applyTheme } from './stores/themeStore';
 import { fetchExercises } from './services/exercisesService';
 import { syncQueue } from './services/syncQueue';
 import type { Exercise } from './types';
@@ -54,6 +55,13 @@ function App() {
   const [exercises, setExercises] = useState<Exercise[]>(mockExercises);
   /** Id упражнения, детальная статистика которого открыта (null — страница закрыта). */
   const [selectedExerciseId, setSelectedExerciseId] = useState<string | null>(null);
+
+  // Тема: подписка на изменения стора (включая onRehydrateStorage из localStorage),
+  // чтобы класс .dark применялся мгновенно при старте приложения.
+  useEffect(() => {
+    applyTheme(useThemeStore.getState().theme);
+    return useThemeStore.subscribe((state) => applyTheme(state.theme));
+  }, []);
 
   // Состояния авторизации из authStore.
   const isLoading = useAuthStore((state) => state.isLoading);

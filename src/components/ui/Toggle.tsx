@@ -25,9 +25,9 @@ export function Toggle({ checked, onChange, label, description, name }: TogglePr
       className="flex min-h-[56px] cursor-pointer items-center justify-between gap-4 py-1"
     >
       <span className="min-w-0">
-        <span className="block font-medium text-slate-100">{label}</span>
+        <span className="block font-medium text-slate-900 dark:text-slate-100">{label}</span>
         {description !== undefined && (
-          <span className="block text-xs text-slate-400">{description}</span>
+          <span className="block text-xs text-slate-500 dark:text-slate-400">{description}</span>
         )}
       </span>
       <input
@@ -43,7 +43,7 @@ export function Toggle({ checked, onChange, label, description, name }: TogglePr
       <span
         aria-hidden="true"
         className={`relative inline-block h-7 w-12 shrink-0 rounded-full transition-colors duration-200 ${
-          checked ? 'bg-emerald-600' : 'bg-slate-700'
+          checked ? 'bg-emerald-600' : 'bg-slate-200 dark:bg-slate-700'
         } peer-focus-visible:ring-2 peer-focus-visible:ring-emerald-400`}
       >
         <span

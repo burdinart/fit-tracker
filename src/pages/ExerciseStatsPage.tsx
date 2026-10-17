@@ -46,9 +46,9 @@ interface SetHistoryRow {
 
 /** Метки тренда прогрессии для UI. */
 const trendMeta: Record<ProgressTrend, { icon: string; label: string; className: string }> = {
-  up: { icon: '📈', label: 'Прогресс', className: 'text-emerald-400' },
-  stable: { icon: '➡️', label: 'Стабильно', className: 'text-amber-400' },
-  down: { icon: '📉', label: 'Спад', className: 'text-rose-400' },
+  up: { icon: '📈', label: 'Прогресс', className: 'text-emerald-600 dark:text-emerald-400' },
+  stable: { icon: '➡️', label: 'Стабильно', className: 'text-amber-600 dark:text-amber-400' },
+  down: { icon: '📉', label: 'Спад', className: 'text-rose-600 dark:text-rose-400' },
 };
 
 /** Форматирование даты тренировки для таблицы. */
@@ -116,28 +116,28 @@ export function ExerciseStatsPage({ exerciseId, exercises, onBack }: ExerciseSta
   const hasData = relevantSessions.length > 0;
 
   return (
-    <main className="min-h-screen bg-slate-900 text-slate-100">
+    <main className="min-h-screen bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">
       {/* Шапка с кнопкой «Назад» и названием упражнения */}
-      <header className="border-b border-slate-800 px-4 py-4">
+      <header className="border-b border-slate-200 dark:border-slate-800 px-4 py-4">
         <div className="mx-auto flex max-w-lg items-center gap-3">
           <button
             type="button"
             onClick={onBack}
-            className="min-h-[48px] min-w-[48px] shrink-0 rounded-xl border border-slate-700 bg-slate-800 text-lg font-bold text-slate-200 transition hover:bg-slate-700"
+            className="min-h-[48px] min-w-[48px] shrink-0 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-lg font-bold text-slate-800 dark:text-slate-200 transition hover:bg-slate-200 dark:bg-slate-700"
             aria-label="Назад"
           >
             ←
           </button>
           <div className="min-w-0">
             <h1 className="truncate text-xl font-bold">{exercise?.name ?? 'Упражнение'}</h1>
-            <p className="text-xs text-slate-400">Детальная статистика</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400">Детальная статистика</p>
           </div>
         </div>
       </header>
 
       <section className="mx-auto max-w-lg space-y-4 px-4 py-4 pb-24">
         {!hasData && (
-          <p className="rounded-xl border border-dashed border-slate-700 p-6 text-center text-slate-400">
+          <p className="rounded-xl border border-dashed border-slate-300 dark:border-slate-700 p-6 text-center text-slate-500 dark:text-slate-400">
             По этому упражнению пока нет данных. Завершите первую тренировку с ним — и здесь
             появятся графики 📊
           </p>
@@ -146,43 +146,43 @@ export function ExerciseStatsPage({ exerciseId, exercises, onBack }: ExerciseSta
         {hasData && (
           <>
             {/* Карточка 1: Рекорд */}
-            <article className="rounded-xl border border-slate-700 bg-slate-800 p-4">
-              <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-400">
+            <article className="rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-4">
+              <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
                 🏆 Рекорд
               </h2>
-              <p className="mt-2 text-3xl font-bold tabular-nums text-amber-400">
+              <p className="mt-2 text-3xl font-bold tabular-nums text-amber-600 dark:text-amber-400">
                 {progression.personalRecord.weight} кг
               </p>
-              <p className="mt-1 text-sm text-slate-400">
+              <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
                 {progression.personalRecord.reps} повт.
                 {progression.personalRecord.date !== '' && ` · ${progression.personalRecord.date}`}
               </p>
             </article>
 
             {/* Карточка 2: Тренд */}
-            <article className="rounded-xl border border-slate-700 bg-slate-800 p-4">
-              <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-400">
+            <article className="rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-4">
+              <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
                 Тренд
               </h2>
               <p className={`mt-2 flex items-center gap-2 text-2xl font-bold ${trend.className}`}>
                 <span aria-hidden="true">{trend.icon}</span>
                 {trend.label}
               </p>
-              <p className="mt-1 text-xs text-slate-400">
+              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                 Проанализировано тренировок: {progression.sessionsAnalyzed}. Средний объём за
                 тренировку: {progression.averageVolumePerSession} кг
               </p>
             </article>
 
             {/* График 1: расчётный 1ПМ по тренировкам */}
-            <article className="rounded-xl border border-slate-700 bg-slate-800 p-4">
-              <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-slate-400">
+            <article className="rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-4">
+              <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
                 Расчётный 1ПМ (кг)
               </h2>
               <div className="h-56 w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={chartData} margin={{ top: 4, right: 8, bottom: 0, left: -24 }}>
-                    <CartesianGrid stroke="#334155" strokeDasharray="3 3" />
+                    <CartesianGrid stroke="var(--color-slate-700)" strokeDasharray="3 3" />
                     <XAxis dataKey="date" tick={{ fill: '#94a3b8', fontSize: 11 }} />
                     <YAxis
                       tick={{ fill: '#94a3b8', fontSize: 11 }}
@@ -211,14 +211,14 @@ export function ExerciseStatsPage({ exerciseId, exercises, onBack }: ExerciseSta
             </article>
 
             {/* График 2: объём по тренировкам */}
-            <article className="rounded-xl border border-slate-700 bg-slate-800 p-4">
-              <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-slate-400">
+            <article className="rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-4">
+              <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
                 Объём по тренировкам (кг)
               </h2>
               <div className="h-56 w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={chartData} margin={{ top: 4, right: 8, bottom: 0, left: -24 }}>
-                    <CartesianGrid stroke="#334155" strokeDasharray="3 3" vertical={false} />
+                    <CartesianGrid stroke="var(--color-slate-700)" strokeDasharray="3 3" vertical={false} />
                     <XAxis dataKey="date" tick={{ fill: '#94a3b8', fontSize: 11 }} />
                     <YAxis tick={{ fill: '#94a3b8', fontSize: 11 }} width={48} />
                     <Tooltip
@@ -238,14 +238,14 @@ export function ExerciseStatsPage({ exerciseId, exercises, onBack }: ExerciseSta
             </article>
 
             {/* Таблица: история подходов */}
-            <article className="rounded-xl border border-slate-700 bg-slate-800 p-4">
-              <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-slate-400">
+            <article className="rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-4">
+              <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
                 История подходов
               </h2>
               <div className="overflow-x-auto">
                 <table className="w-full border-collapse text-left text-sm">
                   <thead>
-                    <tr className="text-xs uppercase tracking-wide text-slate-400">
+                    <tr className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
                       <th className="pb-2 pr-2 font-medium">Дата</th>
                       <th className="pb-2 pr-2 font-medium">Вес</th>
                       <th className="pb-2 pr-2 font-medium">Повторы</th>
@@ -254,8 +254,8 @@ export function ExerciseStatsPage({ exerciseId, exercises, onBack }: ExerciseSta
                   </thead>
                   <tbody>
                     {historyRows.map((row) => (
-                      <tr key={row.key} className="border-t border-slate-700">
-                        <td className="py-2 pr-2 whitespace-nowrap text-slate-300">{row.date}</td>
+                      <tr key={row.key} className="border-t border-slate-300 dark:border-slate-700">
+                        <td className="py-2 pr-2 whitespace-nowrap text-slate-700 dark:text-slate-300">{row.date}</td>
                         <td className="py-2 pr-2 tabular-nums">
                           {row.weight} кг
                           {!row.isCompleted && (
@@ -263,7 +263,7 @@ export function ExerciseStatsPage({ exerciseId, exercises, onBack }: ExerciseSta
                           )}
                         </td>
                         <td className="py-2 pr-2 tabular-nums">{row.reps}</td>
-                        <td className="py-2 tabular-nums text-indigo-300">
+                        <td className="py-2 tabular-nums text-indigo-700 dark:text-indigo-300">
                           {Math.round(row.volume)} кг
                         </td>
                       </tr>

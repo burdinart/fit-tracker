@@ -23,12 +23,13 @@ const tabs: { id: TabId; label: string; icon: string }[] = [
  * «Тренировка», «Планы», «История», «Статистика» и «Настройки». Переключение — простой state в App
  * (роутер на этом этапе не нужен). Фиксирована снизу, затемнённый фон,
  * безопасная зона iPhone (env(safe-area-inset-bottom)).
+ * Поддерживает светлую и тёмную темы (модификатор dark:).
  */
 export function BottomNav({ activeTab, onChange }: BottomNavProps) {
   return (
     <nav
       aria-label="Основная навигация"
-      className="fixed inset-x-0 bottom-0 z-40 border-t border-slate-800 bg-slate-900/95 backdrop-blur"
+      className="fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white/95 backdrop-blur dark:border-slate-800 dark:bg-slate-900/95"
       style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
     >
       <div className="mx-auto flex max-w-lg">
@@ -41,7 +42,9 @@ export function BottomNav({ activeTab, onChange }: BottomNavProps) {
               onClick={() => onChange(tab.id)}
               aria-current={isActive ? 'page' : undefined}
               className={`flex min-h-[56px] flex-1 flex-col items-center justify-center gap-0.5 py-2 text-xs font-medium transition ${
-                isActive ? 'text-emerald-400' : 'text-slate-400 hover:text-slate-200'
+                isActive
+                  ? 'text-emerald-600 dark:text-emerald-400'
+                  : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200'
               }`}
             >
               <span className="text-xl leading-none" aria-hidden="true">

@@ -5,6 +5,7 @@ import { useUserStore } from '../stores/userStore';
 import { getSafeExercises } from '../utils/exerciseFilter';
 import { mockExercises } from '../data/mockExercises';
 import { Toggle } from '../components/ui/Toggle';
+import { ThemeToggle } from '../components/ui/ThemeToggle';
 import { subscribeForPush, unsubscribeFromPush } from '../services/pushService';
 
 /** Описание одного toggle-переключателя травмы. */
@@ -121,16 +122,20 @@ export function SettingsPage() {
   const { safe, unsafe } = getSafeExercises(mockExercises, currentInjuries);
 
   return (
-    <main className="min-h-screen bg-slate-900 pb-32 text-slate-100">
-      <header className="border-b border-slate-800 px-4 py-6">
-        <h1 className="text-2xl font-bold tracking-tight">Настройки</h1>
-        <p className="mt-1 text-sm text-slate-400">Профиль, ограничения и параметры тренировки</p>
+    <main className="min-h-screen bg-white pb-32 text-slate-900 dark:bg-slate-900 dark:text-slate-100">
+      <header className="flex items-start justify-between gap-4 border-b border-slate-200 px-4 py-6 dark:border-slate-800">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Настройки</h1>
+          <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">Профиль, ограничения и параметры тренировки</p>
+        </div>
+        {/* Переключатель темы день/ночь */}
+        <ThemeToggle />
       </header>
 
       <form onSubmit={handleSubmit} className="mx-auto max-w-lg space-y-4 px-4 py-6">
         {/* Карточка: основные параметры */}
-        <section className="rounded-2xl border border-slate-800 bg-slate-800/60 p-4">
-          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-400">
+        <section className="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-800/60">
+          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
             Профиль
           </h2>
 
@@ -143,7 +148,7 @@ export function SettingsPage() {
               onChange={(event) => setNameDraft(event.target.value)}
               placeholder="Как к вам обращаться?"
               autoComplete="name"
-              className="w-full rounded-xl border border-slate-600 bg-slate-900 px-3 py-3 text-base outline-none focus:border-emerald-500"
+              className="w-full rounded-xl border border-slate-300 bg-white px-3 py-3 text-base text-slate-900 outline-none focus:border-emerald-500 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100"
             />
           </label>
 
@@ -164,8 +169,8 @@ export function SettingsPage() {
                   onClick={() => setUnitsDraft(option.value)}
                   className={`min-h-[48px] rounded-xl border px-3 text-sm font-medium transition ${
                     unitsDraft === option.value
-                      ? 'border-emerald-500 bg-emerald-600/20 text-emerald-300'
-                      : 'border-slate-600 bg-slate-900 text-slate-300 hover:border-slate-500'
+                      ? 'border-emerald-500 bg-emerald-600/20 text-emerald-700 dark:text-emerald-300'
+                      : 'border-slate-300 bg-white text-slate-700 hover:border-slate-400 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-slate-500'
                   }`}
                 >
                   {option.label}
@@ -193,15 +198,15 @@ export function SettingsPage() {
         </section>
 
         {/* Карточка: переключатели травм */}
-        <section className="rounded-2xl border border-slate-800 bg-slate-800/60 p-4">
-          <h2 className="mb-1 text-sm font-semibold uppercase tracking-wide text-slate-400">
+        <section className="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-800/60">
+          <h2 className="mb-1 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
             Ограничения (травмы)
           </h2>
           <p className="mb-3 text-xs text-slate-500">
             Небезопасные упражнения скрываются из списка выбора; их можно добавить только через
             предупреждение. Переключения применяются сразу.
           </p>
-          <div className="divide-y divide-slate-700/70">
+          <div className="divide-y divide-slate-200 dark:divide-slate-700/70">
             {injuryToggles.map((toggle) => (
               <Toggle
                 key={toggle.key}
@@ -213,21 +218,21 @@ export function SettingsPage() {
               />
             ))}
           </div>
-          <p className="mt-3 rounded-xl bg-slate-900/70 px-3 py-2 text-xs text-slate-400">
-            Сейчас доступно <span className="font-semibold text-emerald-400">{safe.length}</span>{' '}
+          <p className="mt-3 rounded-xl bg-slate-100 px-3 py-2 text-xs text-slate-600 dark:bg-slate-900/70 dark:text-slate-400">
+            Сейчас доступно <span className="font-semibold text-emerald-600 dark:text-emerald-400">{safe.length}</span>{' '}
             из {mockExercises.length} упражнений
             {unsafe.length > 0 && (
               <>
                 {' '}· скрыто по травмам:{' '}
-                <span className="font-semibold text-rose-400">{unsafe.length}</span>
+                <span className="font-semibold text-rose-600 dark:text-rose-400">{unsafe.length}</span>
               </>
             )}
           </p>
         </section>
 
         {/* Карточка: напоминания о тренировках (Web Push) */}
-        <section className="rounded-2xl border border-slate-800 bg-slate-800/60 p-4">
-          <h2 className="mb-1 text-sm font-semibold uppercase tracking-wide text-slate-400">
+        <section className="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-800/60">
+          <h2 className="mb-1 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
             Уведомления
           </h2>
           <Toggle
@@ -241,7 +246,7 @@ export function SettingsPage() {
             <p className="mt-2 text-xs text-slate-400">Сохраняем настройку…</p>
           )}
           {pushError !== null && (
-            <p className="mt-2 rounded-xl border border-rose-800 bg-rose-950/40 px-3 py-2 text-xs text-rose-300">
+            <p className="mt-2 rounded-xl border border-rose-300 bg-rose-100 px-3 py-2 text-xs text-rose-700 dark:border-rose-800 dark:bg-rose-950/40 dark:text-rose-300">
               {pushError}
             </p>
           )}
@@ -249,7 +254,7 @@ export function SettingsPage() {
 
         {/* Сообщение о сохранении */}
         {savedAt !== null && !isDirty && (
-          <p className="rounded-xl border border-emerald-700 bg-emerald-900/30 px-4 py-2.5 text-sm text-emerald-300">
+          <p className="rounded-xl border border-emerald-300 bg-emerald-50 px-4 py-2.5 text-sm text-emerald-700 dark:border-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">
             ✓ Настройки сохранены
           </p>
         )}

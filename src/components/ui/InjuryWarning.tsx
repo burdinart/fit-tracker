@@ -34,12 +34,12 @@ export function InjuryWarning({ exercise, injuries, allExercises }: InjuryWarnin
       role="alert"
       className="rounded-xl border border-rose-500/60 bg-rose-950/60 px-3 py-2.5 text-sm"
     >
-      <p className="flex items-start gap-2 font-medium text-rose-300">
+      <p className="flex items-start gap-2 font-medium text-rose-700 dark:text-rose-300">
         <span aria-hidden="true" className="shrink-0">⚠️</span>
         <span>{formatUnsafeReasons(reasons)}</span>
       </p>
       {alternatives.length > 0 && (
-        <p className="mt-1.5 pl-7 text-rose-200/80">
+        <p className="mt-1.5 pl-7 text-rose-800 dark:text-rose-200/80">
           Альтернатива: {alternatives.join(', ')}
         </p>
       )}

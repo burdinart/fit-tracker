@@ -85,10 +85,10 @@ export function PlansPage({ exercises }: PlansPageProps) {
   };
 
   return (
-    <main className="min-h-screen bg-slate-900 text-slate-100">
-      <header className="border-b border-slate-800 px-4 py-6">
+    <main className="min-h-screen bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">
+      <header className="border-b border-slate-200 dark:border-slate-800 px-4 py-6">
         <h1 className="text-2xl font-bold tracking-tight">Мои планы тренировок</h1>
-        <p className="mt-1 text-sm text-slate-400">Сохраняйте шаблоны и начинайте тренировку в один тап</p>
+        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Сохраняйте шаблоны и начинайте тренировку в один тап</p>
       </header>
 
       <section className="mx-auto max-w-lg px-4 py-6">
@@ -96,18 +96,18 @@ export function PlansPage({ exercises }: PlansPageProps) {
         <button
           type="button"
           onClick={openCreate}
-          className="mb-4 min-h-[56px] w-full rounded-xl border border-dashed border-emerald-500/60 text-base font-semibold text-emerald-300 transition hover:bg-emerald-950/40 active:scale-[0.99]"
+          className="mb-4 min-h-[56px] w-full rounded-xl border border-dashed border-emerald-500/60 text-base font-semibold text-emerald-700 dark:text-emerald-300 transition hover:bg-emerald-100 dark:bg-emerald-950/40 active:scale-[0.99]"
         >
           ＋ Создать новый план
         </button>
 
         {error !== null && (
-          <p className="mb-4 rounded-xl border border-rose-500/60 bg-rose-950/40 px-4 py-2.5 text-sm text-rose-300">
+          <p className="mb-4 rounded-xl border border-rose-500/60 bg-rose-100 dark:bg-rose-950/40 px-4 py-2.5 text-sm text-rose-700 dark:text-rose-300">
             {error}
           </p>
         )}
         {startError !== null && (
-          <p className="mb-4 rounded-xl border border-rose-500/60 bg-rose-950/40 px-4 py-2.5 text-sm text-rose-300">
+          <p className="mb-4 rounded-xl border border-rose-500/60 bg-rose-100 dark:bg-rose-950/40 px-4 py-2.5 text-sm text-rose-700 dark:text-rose-300">
             {startError}
           </p>
         )}
@@ -116,16 +116,16 @@ export function PlansPage({ exercises }: PlansPageProps) {
         {isLoading ? (
           <ul className="space-y-3" aria-label="Загрузка планов">
             {[0, 1, 2].map((i) => (
-              <li key={i} className="animate-pulse rounded-xl border border-slate-800 bg-slate-800/50 p-4">
-                <div className="h-5 w-1/2 rounded bg-slate-700" />
-                <div className="mt-3 h-4 w-1/3 rounded bg-slate-700/70" />
+              <li key={i} className="animate-pulse rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 p-4">
+                <div className="h-5 w-1/2 rounded bg-slate-200 dark:bg-slate-700" />
+                <div className="mt-3 h-4 w-1/3 rounded bg-slate-200 dark:bg-slate-700/70" />
               </li>
             ))}
           </ul>
         ) : plans.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-slate-700 px-4 py-10 text-center">
+          <div className="rounded-xl border border-dashed border-slate-300 dark:border-slate-700 px-4 py-10 text-center">
             <p className="text-3xl" aria-hidden="true">📋</p>
-            <p className="mt-2 font-medium text-slate-300">У вас пока нет планов.</p>
+            <p className="mt-2 font-medium text-slate-700 dark:text-slate-300">У вас пока нет планов.</p>
             <p className="text-sm text-slate-500">Создайте первый!</p>
           </div>
         ) : (
@@ -135,18 +135,18 @@ export function PlansPage({ exercises }: PlansPageProps) {
               return (
                 <li
                   key={plan.id}
-                  className="rounded-xl border border-slate-700 bg-slate-800 p-4"
+                  className="rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-4"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
                       <h2 className="truncate text-lg font-bold">{plan.name}</h2>
                       {plan.description != null && plan.description !== '' && (
-                        <p className="mt-0.5 line-clamp-2 text-sm text-slate-400">{plan.description}</p>
+                        <p className="mt-0.5 line-clamp-2 text-sm text-slate-500 dark:text-slate-400">{plan.description}</p>
                       )}
                       <p className="mt-1 text-xs text-slate-500">
                         {count === undefined ? '…' : `${count} ${pluralExercises(count)}`}
                         {isWeekDay(plan.day_of_week) && (
-                          <span className="ml-2 rounded-md bg-slate-700/70 px-2 py-0.5 font-medium text-slate-300">
+                          <span className="ml-2 rounded-md bg-slate-200 dark:bg-slate-700/70 px-2 py-0.5 font-medium text-slate-700 dark:text-slate-300">
                             {weekDayLabels[plan.day_of_week]}
                           </span>
                         )}
@@ -167,7 +167,7 @@ export function PlansPage({ exercises }: PlansPageProps) {
                     <button
                       type="button"
                       onClick={() => openEdit(plan.id)}
-                      className="min-h-[56px] min-w-[56px] rounded-xl border border-slate-600 text-lg transition hover:bg-slate-700"
+                      className="min-h-[56px] min-w-[56px] rounded-xl border border-slate-300 dark:border-slate-600 text-lg transition hover:bg-slate-200 dark:bg-slate-700"
                       aria-label={`Редактировать план ${plan.name}`}
                       title="Редактировать"
                     >
@@ -176,7 +176,7 @@ export function PlansPage({ exercises }: PlansPageProps) {
                     <button
                       type="button"
                       onClick={() => setPendingDelete(plan)}
-                      className="min-h-[56px] min-w-[56px] rounded-xl border border-slate-600 text-lg transition hover:bg-slate-700 hover:text-rose-400"
+                      className="min-h-[56px] min-w-[56px] rounded-xl border border-slate-300 dark:border-slate-600 text-lg transition hover:bg-slate-200 dark:bg-slate-700 hover:text-rose-600 dark:text-rose-400"
                       aria-label={`Удалить план ${plan.name}`}
                       title="Удалить"
                     >
@@ -212,20 +212,20 @@ export function PlansPage({ exercises }: PlansPageProps) {
           onClick={() => setPendingDelete(null)}
         >
           <div
-            className="w-full max-w-sm rounded-2xl border border-slate-700 bg-slate-800 p-5"
+            className="w-full max-w-sm rounded-2xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-5"
             onClick={(event) => event.stopPropagation()}
           >
             <h3 id="delete-plan-title" className="text-lg font-bold">
               Удалить план «{pendingDelete.name}»?
             </h3>
-            <p className="mt-1 text-sm text-slate-400">
+            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
               Упражнения плана тоже будут удалены. Действие необратимо.
             </p>
             <div className="mt-4 flex gap-3">
               <button
                 type="button"
                 onClick={() => setPendingDelete(null)}
-                className="min-h-[56px] flex-1 rounded-xl border border-slate-600 font-semibold text-slate-300 transition hover:bg-slate-700"
+                className="min-h-[56px] flex-1 rounded-xl border border-slate-300 dark:border-slate-600 font-semibold text-slate-700 dark:text-slate-300 transition hover:bg-slate-200 dark:bg-slate-700"
               >
                 Отмена
               </button>

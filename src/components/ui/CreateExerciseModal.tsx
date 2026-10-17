@@ -88,18 +88,18 @@ export function CreateExerciseModal({ onClose, onCreated }: CreateExerciseModalP
       onClick={onClose}
     >
       <div
-        className="max-h-[90dvh] w-full max-w-md space-y-4 overflow-y-auto rounded-2xl border border-slate-700 bg-slate-800 p-5"
+        className="max-h-[90dvh] w-full max-w-md space-y-4 overflow-y-auto rounded-2xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-5"
         onClick={(event) => event.stopPropagation()}
       >
         <div className="flex items-center justify-between">
-          <h2 id="create-exercise-title" className="text-xl font-bold text-slate-100">
+          <h2 id="create-exercise-title" className="text-xl font-bold text-slate-900 dark:text-slate-100">
             Новое упражнение
           </h2>
           <button
             type="button"
             onClick={onClose}
             aria-label="Закрыть"
-            className="min-h-[44px] min-w-[44px] rounded-xl text-2xl leading-none text-slate-400 transition hover:bg-slate-700 hover:text-white"
+            className="min-h-[44px] min-w-[44px] rounded-xl text-2xl leading-none text-slate-500 dark:text-slate-400 transition hover:bg-slate-200 dark:bg-slate-700 hover:text-white"
           >
             ×
           </button>
@@ -107,24 +107,24 @@ export function CreateExerciseModal({ onClose, onCreated }: CreateExerciseModalP
 
         {/* Название */}
         <label className="block">
-          <span className="mb-1 block text-sm font-medium text-slate-300">Название</span>
+          <span className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">Название</span>
           <input
             type="text"
             value={name}
             onChange={(event) => setName(event.target.value)}
             placeholder="Например: Тяга гантели одной рукой"
             maxLength={80}
-            className="min-h-[48px] w-full rounded-xl border border-slate-600 bg-slate-900 px-3 text-slate-100 placeholder:text-slate-500 focus:border-emerald-500 focus:outline-none"
+            className="min-h-[48px] w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 text-slate-900 dark:text-slate-100 placeholder:text-slate-500 focus:border-emerald-500 focus:outline-none"
           />
         </label>
 
         {/* Группа мышц */}
         <label className="block">
-          <span className="mb-1 block text-sm font-medium text-slate-300">Группа мышц</span>
+          <span className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">Группа мышц</span>
           <select
             value={muscleGroup}
             onChange={(event) => setMuscleGroup(event.target.value as MuscleGroup)}
-            className="min-h-[48px] w-full rounded-xl border border-slate-600 bg-slate-900 px-3 text-slate-100 focus:border-emerald-500 focus:outline-none"
+            className="min-h-[48px] w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 text-slate-900 dark:text-slate-100 focus:border-emerald-500 focus:outline-none"
           >
             {(Object.keys(muscleGroupLabels) as MuscleGroup[]).map((group) => (
               <option key={group} value={group}>
@@ -136,11 +136,11 @@ export function CreateExerciseModal({ onClose, onCreated }: CreateExerciseModalP
 
         {/* Инвентарь */}
         <label className="block">
-          <span className="mb-1 block text-sm font-medium text-slate-300">Инвентарь</span>
+          <span className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">Инвентарь</span>
           <select
             value={equipment}
             onChange={(event) => setEquipment(event.target.value as Equipment)}
-            className="min-h-[48px] w-full rounded-xl border border-slate-600 bg-slate-900 px-3 text-slate-100 focus:border-emerald-500 focus:outline-none"
+            className="min-h-[48px] w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 text-slate-900 dark:text-slate-100 focus:border-emerald-500 focus:outline-none"
           >
             {equipmentOptions.map((option) => (
               <option key={option.value} value={option.value}>
@@ -152,7 +152,7 @@ export function CreateExerciseModal({ onClose, onCreated }: CreateExerciseModalP
 
         {/* Чекбоксы безопасности */}
         <fieldset className="space-y-1">
-          <legend className="mb-1 text-sm font-medium text-slate-300">Безопасность суставов</legend>
+          <legend className="mb-1 text-sm font-medium text-slate-700 dark:text-slate-300">Безопасность суставов</legend>
           {safetyOptions.map(({ key, label }) => {
             const checked =
               key === 'shoulder' ? shoulderSafe : key === 'knee' ? kneeSafe : lowerBackSafe;
@@ -165,7 +165,7 @@ export function CreateExerciseModal({ onClose, onCreated }: CreateExerciseModalP
             return (
               <label
                 key={key}
-                className="flex min-h-[44px] cursor-pointer items-center gap-3 rounded-xl px-1 text-sm text-slate-200 hover:bg-slate-700/50"
+                className="flex min-h-[44px] cursor-pointer items-center gap-3 rounded-xl px-1 text-sm text-slate-800 dark:text-slate-200 hover:bg-slate-200/60 dark:bg-slate-700/50"
               >
                 <input
                   type="checkbox"
@@ -180,7 +180,7 @@ export function CreateExerciseModal({ onClose, onCreated }: CreateExerciseModalP
         </fieldset>
 
         {error !== null && (
-          <p className="rounded-xl border border-rose-600 bg-rose-950/50 px-3 py-2 text-sm text-rose-200">
+          <p className="rounded-xl border border-rose-600 bg-rose-950/50 px-3 py-2 text-sm text-rose-800 dark:text-rose-200">
             {error}
           </p>
         )}
@@ -189,7 +189,7 @@ export function CreateExerciseModal({ onClose, onCreated }: CreateExerciseModalP
           <button
             type="button"
             onClick={onClose}
-            className="min-h-[48px] flex-1 rounded-xl border border-slate-600 bg-slate-700/60 text-sm font-semibold text-slate-200 transition hover:bg-slate-700"
+            className="min-h-[48px] flex-1 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-200 dark:bg-slate-700/60 text-sm font-semibold text-slate-800 dark:text-slate-200 transition hover:bg-slate-200 dark:bg-slate-700"
           >
             Отмена
           </button>

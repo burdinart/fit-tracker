@@ -41,9 +41,9 @@ const muscleGroupIcons: Record<MuscleGroup, string> = {
 
 /** Цветовые стили плашки рекомендации по тренду прогрессии. */
 const trendBannerStyles: Record<ProgressTrend, string> = {
-  up: 'border-emerald-600/60 bg-emerald-950/40 text-emerald-300',
-  stable: 'border-amber-600/50 bg-amber-950/30 text-amber-300',
-  down: 'border-rose-600/60 bg-rose-950/40 text-rose-300',
+  up: 'border-emerald-600/60 bg-emerald-950/40 text-emerald-700 dark:text-emerald-300',
+  stable: 'border-amber-600/50 bg-amber-950/30 text-amber-700 dark:text-amber-300',
+  down: 'border-rose-600/60 bg-rose-950/40 text-rose-700 dark:text-rose-300',
 };
 
 /** Числовое значение ввода веса: пустая строка → 0. */
@@ -136,8 +136,8 @@ export function ExerciseCard({
 
   return (
     <article
-      className={`rounded-xl border bg-slate-800 p-4 ${
-        isUnsafeForUser ? 'border-rose-500 ring-1 ring-rose-500/50' : 'border-slate-700'
+      className={`rounded-xl border bg-slate-50 dark:bg-slate-800 p-4 ${
+        isUnsafeForUser ? 'border-rose-500 ring-1 ring-rose-500/50' : 'border-slate-300 dark:border-slate-700'
       }`}
     >
       {/* Заголовок: иконка + название + бейдж группы мышц + предупреждение + удаление */}
@@ -155,10 +155,10 @@ export function ExerciseCard({
               )}
               {exercise.name}
             </h3>
-            <p className="mt-0.5 text-xs text-slate-400">
+            <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
               {muscleGroupLabels[exercise.muscleGroup]}
               {isUnsafeForUser && (
-                <span className="ml-2 font-medium text-rose-400">небезопасно при ваших ограничениях</span>
+                <span className="ml-2 font-medium text-rose-600 dark:text-rose-400">небезопасно при ваших ограничениях</span>
               )}
             </p>
           </div>
@@ -168,7 +168,7 @@ export function ExerciseCard({
             <button
               type="button"
               onClick={() => onOpenStats(exercise.id)}
-              className="min-h-[44px] rounded-lg px-2 py-1 text-base text-slate-400 transition hover:bg-slate-700 hover:text-emerald-400"
+              className="min-h-[44px] rounded-lg px-2 py-1 text-base text-slate-500 dark:text-slate-400 transition hover:bg-slate-200 dark:bg-slate-700 hover:text-emerald-600 dark:text-emerald-400"
               aria-label={`Открыть статистику упражнения ${exercise.name}`}
               title="Статистика упражнения"
             >
@@ -178,7 +178,7 @@ export function ExerciseCard({
           <button
             type="button"
             onClick={() => onRemove(exercise.id)}
-            className="min-h-[44px] rounded-lg px-2 py-1 text-base text-slate-400 transition hover:bg-slate-700 hover:text-rose-400"
+            className="min-h-[44px] rounded-lg px-2 py-1 text-base text-slate-500 dark:text-slate-400 transition hover:bg-slate-200 dark:bg-slate-700 hover:text-rose-600 dark:text-rose-400"
             aria-label={`Удалить упражнение ${exercise.name} из тренировки`}
             title="Удалить упражнение"
           >
@@ -202,7 +202,7 @@ export function ExerciseCard({
             <button
               type="button"
               onClick={applyRecommendation}
-              className="min-h-[44px] rounded-lg bg-slate-900/50 px-3 py-1.5 text-xs font-bold text-white transition hover:bg-slate-900/80 active:scale-[0.97]"
+              className="min-h-[44px] rounded-lg bg-white dark:bg-slate-900/50 px-3 py-1.5 text-xs font-bold text-white transition hover:bg-white dark:bg-slate-900/80 active:scale-[0.97]"
             >
               Применить рекомендацию
             </button>
@@ -229,7 +229,7 @@ export function ExerciseCard({
       {/* Таблица подходов */}
       <table className="w-full border-collapse text-left">
         <thead>
-          <tr className="text-xs uppercase tracking-wide text-slate-400">
+          <tr className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
             <th className="pb-2 pr-2 font-medium">Подход</th>
             <th className="pb-2 pr-2 font-medium">Вес</th>
             <th className="pb-2 pr-2 font-medium">Повторы</th>
@@ -240,11 +240,11 @@ export function ExerciseCard({
           {workoutExercise.sets.map((workoutSet, index) => (
             <tr
               key={workoutSet.id}
-              className={`border-t border-slate-700 ${
+              className={`border-t border-slate-300 dark:border-slate-700 ${
                 workoutSet.isCompleted ? 'bg-emerald-900/30' : ''
               }`}
             >
-              <td className="py-2 pr-2 text-lg font-semibold tabular-nums text-slate-300">
+              <td className="py-2 pr-2 text-lg font-semibold tabular-nums text-slate-700 dark:text-slate-300">
                 {index + 1}
               </td>
               <td className="py-2 pr-2">
@@ -255,7 +255,7 @@ export function ExerciseCard({
                   step={0.5}
                   value={weightDisplay(workoutSet)}
                   onChange={(event) => handleWeightChange(workoutSet, event.target.value)}
-                  className="w-20 text-2xl py-2 bg-slate-800 rounded text-center tabular-nums text-slate-100 outline-none focus:ring-2 focus:ring-emerald-500"
+                  className="w-20 text-2xl py-2 bg-slate-50 dark:bg-slate-800 rounded text-center tabular-nums text-slate-900 dark:text-slate-100 outline-none focus:ring-2 focus:ring-emerald-500"
                   aria-label={`Вес, подход ${index + 1}`}
                 />
               </td>
@@ -267,7 +267,7 @@ export function ExerciseCard({
                   step={1}
                   value={repsDisplay(workoutSet)}
                   onChange={(event) => handleRepsChange(workoutSet, event.target.value)}
-                  className="w-20 text-2xl py-2 bg-slate-800 rounded text-center tabular-nums text-slate-100 outline-none focus:ring-2 focus:ring-emerald-500"
+                  className="w-20 text-2xl py-2 bg-slate-50 dark:bg-slate-800 rounded text-center tabular-nums text-slate-900 dark:text-slate-100 outline-none focus:ring-2 focus:ring-emerald-500"
                   aria-label={`Повторы, подход ${index + 1}`}
                 />
               </td>
@@ -278,7 +278,7 @@ export function ExerciseCard({
                   className={`min-h-[56px] min-w-[56px] rounded-xl text-2xl font-bold transition active:scale-[0.96] ${
                     workoutSet.isCompleted
                       ? 'bg-emerald-600 text-white'
-                      : 'bg-slate-700 text-slate-300 hover:bg-emerald-700 hover:text-white'
+                      : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-emerald-700 hover:text-white'
                   }`}
                   aria-label={`Отметить подход ${index + 1} выполненным`}
                 >
@@ -294,7 +294,7 @@ export function ExerciseCard({
       <button
         type="button"
         onClick={() => onAddSet(exercise.id)}
-        className="mt-3 min-h-[56px] w-full rounded-xl border border-dashed border-slate-600 text-lg font-medium text-slate-300 transition hover:border-emerald-500 hover:text-emerald-400 active:scale-[0.99]"
+        className="mt-3 min-h-[56px] w-full rounded-xl border border-dashed border-slate-300 dark:border-slate-600 text-lg font-medium text-slate-700 dark:text-slate-300 transition hover:border-emerald-500 hover:text-emerald-600 dark:text-emerald-400 active:scale-[0.99]"
       >
         + Добавить подход
       </button>

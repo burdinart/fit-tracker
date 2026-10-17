@@ -174,7 +174,7 @@ export function EditExerciseModal({
               type="button"
               onClick={onClose}
               disabled={isLoading}
-              className="min-h-[48px] flex-1 rounded-lg border border-slate-300 text-slate-700 transition-colors hover:bg-slate-100 disabled:opacity-50 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-700"
+              className="min-h-[48px] flex-1 rounded-lg border border-slate-300 text-slate-700 transition-colors hover:bg-slate-100 disabled:opacity-50 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-200 dark:bg-slate-700"
             >
               Отмена
             </button>

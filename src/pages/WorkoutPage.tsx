@@ -304,18 +304,18 @@ export function WorkoutPage({ exercises, onExercisesChange, onOpenExerciseStats 
   // --- Экран выбора упражнений (тренировка ещё не начата) ---
   if (!isWorkoutActive) {
     return (
-      <main className="min-h-screen bg-slate-900 text-slate-100">
-        <header className="border-b border-slate-800 px-4 py-6">
+      <main className="min-h-screen bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">
+        <header className="border-b border-slate-200 dark:border-slate-800 px-4 py-6">
           <div className="flex items-center justify-between gap-3">
             <div>
               <h1 className="text-2xl font-bold tracking-tight">FitTracker</h1>
-              <p className="mt-1 text-sm text-slate-400">Выберите упражнения и начните тренировку</p>
+              <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Выберите упражнения и начните тренировку</p>
             </div>
             {/* Кнопка выхода из аккаунта (Supabase Auth) */}
             <button
               type="button"
               onClick={() => void useAuthStore.getState().signOut()}
-              className="shrink-0 rounded-xl border border-slate-700 bg-slate-800 px-3 py-2 text-sm font-medium text-slate-300 transition hover:bg-slate-700 hover:text-white"
+              className="shrink-0 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 transition hover:bg-slate-200 dark:bg-slate-700 hover:text-white"
             >
               Выйти
             </button>
@@ -325,14 +325,14 @@ export function WorkoutPage({ exercises, onExercisesChange, onOpenExerciseStats 
         <section className="mx-auto max-w-lg px-4 py-6">
           {/* Баннер на экране выбора: тренировка уже сохранена в историю */}
           {lastSession !== null && (
-            <div className="mb-4 rounded-xl border border-emerald-700 bg-emerald-900/30 px-4 py-3">
-              <p className="font-semibold text-emerald-300">
+            <div className="mb-4 rounded-xl border border-emerald-700 bg-emerald-100 dark:bg-emerald-900/30 px-4 py-3">
+              <p className="font-semibold text-emerald-700 dark:text-emerald-300">
                 Тренировка завершена 🎉 — сохранена в историю
               </p>
               <button
                 type="button"
                 onClick={() => setShowSummary(true)}
-                className="mt-1 text-sm font-medium text-emerald-400 underline-offset-2 hover:underline"
+                className="mt-1 text-sm font-medium text-emerald-600 dark:text-emerald-400 underline-offset-2 hover:underline"
               >
                 Показать итоги
               </button>
@@ -341,7 +341,7 @@ export function WorkoutPage({ exercises, onExercisesChange, onOpenExerciseStats 
 
           {/* Ограничения взяты из настроек профиля */}
           {(injuries.shoulder || injuries.knee || injuries.lowerBack) && (
-            <p className="mb-4 rounded-xl border border-slate-700 bg-slate-800/60 px-4 py-2.5 text-xs text-slate-400">
+            <p className="mb-4 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-2.5 text-xs text-slate-500 dark:text-slate-400">
               ⚠️ Фильтр травм активен — измените ограничения во вкладке «Настройки»
             </p>
           )}
@@ -349,11 +349,11 @@ export function WorkoutPage({ exercises, onExercisesChange, onOpenExerciseStats 
           {/* Секция «Мои планы»: быстрый старт тренировки по сохранённому плану (ШАГ 6) */}
           {plans.length > 0 && (
             <div className="mb-5">
-              <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-slate-400">
+              <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
                 Мои планы
               </h2>
               {planStartError !== null && (
-                <p className="mb-2 rounded-xl border border-rose-500/60 bg-rose-950/40 px-3 py-2 text-sm text-rose-300">
+                <p className="mb-2 rounded-xl border border-rose-500/60 bg-rose-100 dark:bg-rose-950/40 px-3 py-2 text-sm text-rose-700 dark:text-rose-300">
                   {planStartError}
                 </p>
               )}
@@ -361,11 +361,11 @@ export function WorkoutPage({ exercises, onExercisesChange, onOpenExerciseStats 
                 {plans.map((plan) => (
                   <li
                     key={plan.id}
-                    className="w-64 shrink-0 snap-start rounded-xl border border-slate-700 bg-slate-800 p-3"
+                    className="w-64 shrink-0 snap-start rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-3"
                   >
                     <p className="truncate font-semibold">{plan.name}</p>
                     {plan.description != null && plan.description !== '' && (
-                      <p className="mt-0.5 line-clamp-2 text-xs text-slate-400">{plan.description}</p>
+                      <p className="mt-0.5 line-clamp-2 text-xs text-slate-500 dark:text-slate-400">{plan.description}</p>
                     )}
                     <button
                       type="button"
@@ -388,11 +388,11 @@ export function WorkoutPage({ exercises, onExercisesChange, onOpenExerciseStats 
               return (
                 <li
                   key={exercise.id}
-                  className="flex items-center justify-between gap-3 rounded-xl border border-slate-700 bg-slate-800 px-4 py-3"
+                  className="flex items-center justify-between gap-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-4 py-3"
                 >
                   <div className="min-w-0">
                     <p className="truncate font-medium">{exercise.name}</p>
-                    <p className="text-xs text-slate-400">
+                    <p className="text-xs text-slate-500 dark:text-slate-400">
                       {muscleGroupLabels[exercise.muscleGroup]}
                     </p>
                   </div>
@@ -402,7 +402,7 @@ export function WorkoutPage({ exercises, onExercisesChange, onOpenExerciseStats 
                       <button
                         type="button"
                         onClick={() => onOpenExerciseStats(exercise.id)}
-                        className="min-h-[44px] min-w-[44px] rounded-lg text-lg text-slate-400 transition hover:bg-slate-700 hover:text-emerald-400"
+                        className="min-h-[44px] min-w-[44px] rounded-lg text-lg text-slate-500 dark:text-slate-400 transition hover:bg-slate-200 dark:bg-slate-700 hover:text-emerald-600 dark:text-emerald-400"
                         aria-label={`Статистика упражнения ${exercise.name}`}
                         title="Статистика"
                       >
@@ -428,7 +428,7 @@ export function WorkoutPage({ exercises, onExercisesChange, onOpenExerciseStats 
           <button
             type="button"
             onClick={() => setShowCreateModal(true)}
-            className="mt-3 min-h-[48px] w-full rounded-xl border border-dashed border-emerald-500/60 px-4 py-2.5 text-sm font-semibold text-emerald-300 transition hover:bg-emerald-950/40"
+            className="mt-3 min-h-[48px] w-full rounded-xl border border-dashed border-emerald-500/60 px-4 py-2.5 text-sm font-semibold text-emerald-700 dark:text-emerald-300 transition hover:bg-emerald-100 dark:bg-emerald-950/40"
           >
             ＋ Создать своё упражнение
           </button>
@@ -440,7 +440,7 @@ export function WorkoutPage({ exercises, onExercisesChange, onOpenExerciseStats 
                 type="button"
                 onClick={() => setShowRestricted((prev) => !prev)}
                 aria-expanded={showRestricted}
-                className="min-h-[44px] w-full rounded-xl border border-dashed border-rose-500/50 px-4 py-2 text-sm font-medium text-rose-300 transition hover:bg-rose-950/40"
+                className="min-h-[44px] w-full rounded-xl border border-dashed border-rose-500/50 px-4 py-2 text-sm font-medium text-rose-700 dark:text-rose-300 transition hover:bg-rose-100 dark:bg-rose-950/40"
               >
                 {showRestricted
                   ? 'Скрыть ограниченные упражнения'
@@ -453,7 +453,7 @@ export function WorkoutPage({ exercises, onExercisesChange, onOpenExerciseStats 
                     return (
                       <li
                         key={exercise.id}
-                        className="rounded-xl border border-rose-500/60 bg-slate-800 px-4 py-3"
+                        className="rounded-xl border border-rose-500/60 bg-slate-50 dark:bg-slate-800 px-4 py-3"
                       >
                         <div className="flex items-center justify-between gap-3">
                           <div className="min-w-0">
@@ -461,7 +461,7 @@ export function WorkoutPage({ exercises, onExercisesChange, onOpenExerciseStats 
                               <span aria-hidden="true">⚠️ </span>
                               {exercise.name}
                             </p>
-                            <p className="text-xs text-slate-400">
+                            <p className="text-xs text-slate-500 dark:text-slate-400">
                               {muscleGroupLabels[exercise.muscleGroup]}
                             </p>
                           </div>
@@ -495,10 +495,10 @@ export function WorkoutPage({ exercises, onExercisesChange, onOpenExerciseStats 
           <div className="pb-32" />
 
           {/* Большая фиксированная кнопка старта */}
-          <div className="fixed inset-x-0 bottom-14 border-t border-slate-800 bg-slate-900/95 px-4 py-4 backdrop-blur">
+          <div className="fixed inset-x-0 bottom-14 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/95 px-4 py-4 backdrop-blur">
             <div className="mx-auto max-w-lg">
               {addedIds.size === 0 && (
-                <p className="mb-2 text-center text-sm text-amber-400">
+                <p className="mb-2 text-center text-sm text-amber-600 dark:text-amber-400">
                   Сначала добавьте упражнения кнопкой «+»
                 </p>
               )}
@@ -524,31 +524,31 @@ export function WorkoutPage({ exercises, onExercisesChange, onOpenExerciseStats 
           onClick={() => setShowSummary(false)}
         >
           <div
-            className="w-full max-w-md space-y-4 rounded-2xl border border-slate-700 bg-slate-800 p-5"
+            className="w-full max-w-md space-y-4 rounded-2xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-5"
             onClick={(event) => event.stopPropagation()}
           >
             <h2 id="summary-title" className="text-xl font-bold">
               Тренировка завершена 🎉
             </h2>
-            <p className="text-sm text-slate-400">Итоги сохранены в историю</p>
+            <p className="text-sm text-slate-500 dark:text-slate-400">Итоги сохранены в историю</p>
             <div className="grid grid-cols-3 gap-3 text-center">
-              <div className="rounded-xl bg-slate-900/70 p-3">
-                <p className="text-lg font-bold tabular-nums text-emerald-400">
+              <div className="rounded-xl bg-white dark:bg-slate-900/70 p-3">
+                <p className="text-lg font-bold tabular-nums text-emerald-600 dark:text-emerald-400">
                   {formatTime(lastSession.durationSec)}
                 </p>
-                <p className="mt-0.5 text-[11px] text-slate-400">Длительность</p>
+                <p className="mt-0.5 text-[11px] text-slate-500 dark:text-slate-400">Длительность</p>
               </div>
-              <div className="rounded-xl bg-slate-900/70 p-3">
-                <p className="text-lg font-bold tabular-nums text-indigo-300">
+              <div className="rounded-xl bg-white dark:bg-slate-900/70 p-3">
+                <p className="text-lg font-bold tabular-nums text-indigo-700 dark:text-indigo-300">
                   {formatVolume(getTotalVolume([lastSession]))}
                 </p>
-                <p className="mt-0.5 text-[11px] text-slate-400">Объём</p>
+                <p className="mt-0.5 text-[11px] text-slate-500 dark:text-slate-400">Объём</p>
               </div>
-              <div className="rounded-xl bg-slate-900/70 p-3">
-                <p className="text-lg font-bold tabular-nums text-amber-400">
+              <div className="rounded-xl bg-white dark:bg-slate-900/70 p-3">
+                <p className="text-lg font-bold tabular-nums text-amber-600 dark:text-amber-400">
                   {countCompletedSets(lastSession)}
                 </p>
-                <p className="mt-0.5 text-[11px] text-slate-400">Подходов</p>
+                <p className="mt-0.5 text-[11px] text-slate-500 dark:text-slate-400">Подходов</p>
               </div>
             </div>
             <button
@@ -572,7 +572,7 @@ export function WorkoutPage({ exercises, onExercisesChange, onOpenExerciseStats 
             onClick={() => setPendingUnsafe(null)}
           >
             <div
-              className="w-full max-w-md space-y-4 rounded-2xl border border-slate-700 bg-slate-800 p-5"
+              className="w-full max-w-md space-y-4 rounded-2xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-5"
               onClick={(event) => event.stopPropagation()}
             >
               <h2 id="unsafe-confirm-title" className="text-lg font-bold">
@@ -583,7 +583,7 @@ export function WorkoutPage({ exercises, onExercisesChange, onOpenExerciseStats 
                 injuries={injuries}
                 allExercises={exercises}
               />
-              <p className="text-sm text-slate-400">
+              <p className="text-sm text-slate-500 dark:text-slate-400">
                 Это упражнение небезопасно при ваших ограничениях. Вы можете добавить его вручную,
                 взяв ответственность на себя.
               </p>
@@ -591,7 +591,7 @@ export function WorkoutPage({ exercises, onExercisesChange, onOpenExerciseStats 
                 <button
                   type="button"
                   onClick={() => setPendingUnsafe(null)}
-                  className="min-h-[48px] flex-1 rounded-xl border border-slate-600 text-sm font-medium text-slate-300 transition hover:bg-slate-700"
+                  className="min-h-[48px] flex-1 rounded-xl border border-slate-300 dark:border-slate-600 text-sm font-medium text-slate-700 dark:text-slate-300 transition hover:bg-slate-200 dark:bg-slate-700"
                 >
                   Отмена
                 </button>
@@ -632,12 +632,12 @@ export function WorkoutPage({ exercises, onExercisesChange, onOpenExerciseStats 
 
   // --- Экран активной тренировки ---
   return (
-    <main className="flex min-h-screen flex-col bg-slate-900 text-slate-100">
+    <main className="flex min-h-screen flex-col bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">
       <WorkoutHeader elapsedSec={elapsedSec} onEnd={handleEndWorkout} />
 
       <section className="mx-auto w-full max-w-lg flex-1 space-y-4 px-4 py-4">
         {currentExercises.length === 0 ? (
-          <p className="rounded-xl border border-dashed border-slate-700 p-6 text-center text-slate-400">
+          <p className="rounded-xl border border-dashed border-slate-300 dark:border-slate-700 p-6 text-center text-slate-500 dark:text-slate-400">
             Нет упражнений. Вернитесь на экран выбора и добавьте упражнения в тренировку.
           </p>
         ) : (

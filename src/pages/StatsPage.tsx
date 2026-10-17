@@ -161,7 +161,7 @@ export function StatsPage({ exercises }: StatsPageProps) {
   // --- Состояние загрузки ---
   if (status === 'loading') {
     return (
-      <main className="flex min-h-dvh flex-col items-center justify-center bg-slate-900 text-slate-400">
+      <main className="flex min-h-dvh flex-col items-center justify-center bg-white dark:bg-slate-900 text-slate-500 dark:text-slate-400">
         <div className="animate-pulse text-lg">Загрузка статистики…</div>
       </main>
     );
@@ -170,12 +170,12 @@ export function StatsPage({ exercises }: StatsPageProps) {
   // --- Пустое состояние: нет ни одной тренировки ---
   if (sessions.length === 0) {
     return (
-      <main className="min-h-dvh bg-slate-900 px-4 py-6 text-slate-100">
+      <main className="min-h-dvh bg-white dark:bg-slate-900 px-4 py-6 text-slate-900 dark:text-slate-100">
         <h1 className="text-2xl font-bold tracking-tight">Статистика</h1>
-        <div className="mx-auto mt-10 max-w-md rounded-2xl border border-dashed border-slate-700 p-8 text-center">
+        <div className="mx-auto mt-10 max-w-md rounded-2xl border border-dashed border-slate-300 dark:border-slate-700 p-8 text-center">
           <p className="text-4xl" aria-hidden="true">📊</p>
-          <p className="mt-3 font-semibold text-slate-200">Пока нет данных</p>
-          <p className="mt-1 text-sm text-slate-400">
+          <p className="mt-3 font-semibold text-slate-800 dark:text-slate-200">Пока нет данных</p>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
             Завершите первую тренировку — здесь появятся графики прогресса и тоннажа.
           </p>
         </div>
@@ -185,10 +185,10 @@ export function StatsPage({ exercises }: StatsPageProps) {
   }
 
   return (
-    <main className="min-h-dvh bg-slate-900 text-slate-100">
-      <header className="border-b border-slate-800 px-4 py-6">
+    <main className="min-h-dvh bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">
+      <header className="border-b border-slate-200 dark:border-slate-800 px-4 py-6">
         <h1 className="text-2xl font-bold tracking-tight">Статистика</h1>
-        <p className="mt-1 text-sm text-slate-400">
+        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
           {isCloudSource ? 'Данные из облака Supabase' : 'Данные из локальной истории'}
         </p>
       </header>
@@ -196,28 +196,28 @@ export function StatsPage({ exercises }: StatsPageProps) {
       <section className="mx-auto max-w-lg space-y-4 px-4 py-6">
         {/* ---------- Карточка 1: сводка ---------- */}
         <div className="grid grid-cols-2 gap-3">
-          <div className="rounded-2xl border border-slate-700 bg-slate-800 p-4">
-            <p className="text-3xl font-bold tabular-nums text-emerald-400">{totalSessions}</p>
-            <p className="mt-1 text-sm text-slate-400">Всего тренировок</p>
+          <div className="rounded-2xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-4">
+            <p className="text-3xl font-bold tabular-nums text-emerald-600 dark:text-emerald-400">{totalSessions}</p>
+            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Всего тренировок</p>
           </div>
-          <div className="rounded-2xl border border-slate-700 bg-slate-800 p-4">
-            <p className="text-3xl font-bold tabular-nums text-indigo-300">
+          <div className="rounded-2xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-4">
+            <p className="text-3xl font-bold tabular-nums text-indigo-700 dark:text-indigo-300">
               {round2(totalVolumeKg / 1000)} т
             </p>
-            <p className="mt-1 text-sm text-slate-400">Общий поднятый тоннаж</p>
+            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Общий поднятый тоннаж</p>
           </div>
         </div>
 
         {/* ---------- Карточка 2: прогресс 1ПМ упражнения ---------- */}
-        <div className="rounded-2xl border border-slate-700 bg-slate-800 p-4">
+        <div className="rounded-2xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-4">
           <h2 className="font-semibold">Прогресс упражнения (расчётный 1ПМ)</h2>
           <label className="mt-3 block">
-            <span className="mb-1 block text-sm text-slate-300">Упражнение</span>
+            <span className="mb-1 block text-sm text-slate-700 dark:text-slate-300">Упражнение</span>
             <select
               value={selectedExerciseId ?? ''}
               onChange={(event) => setSelectedExerciseId(event.target.value)}
               disabled={trainedExerciseOptions.length === 0}
-              className="min-h-[48px] w-full rounded-xl border border-slate-600 bg-slate-900 px-3 text-slate-100 focus:border-emerald-500 focus:outline-none"
+              className="min-h-[48px] w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 text-slate-900 dark:text-slate-100 focus:border-emerald-500 focus:outline-none"
             >
               {trainedExerciseOptions.length === 0 && <option value="">Нет данных</option>}
               {trainedExerciseOptions.map((option) => (
@@ -229,22 +229,22 @@ export function StatsPage({ exercises }: StatsPageProps) {
           </label>
 
           {progressPoints.length === 0 ? (
-            <p className="mt-4 rounded-xl border border-dashed border-slate-600 p-4 text-center text-sm text-slate-400">
+            <p className="mt-4 rounded-xl border border-dashed border-slate-300 dark:border-slate-600 p-4 text-center text-sm text-slate-500 dark:text-slate-400">
               Для этого упражнения пока нет выполненных подходов.
             </p>
           ) : (
             <div className="mt-4 h-56 w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={progressPoints} margin={{ top: 5, right: 8, bottom: 0, left: -18 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--color-slate-700)" />
                   <XAxis
                     dataKey="label"
                     tick={{ fill: '#94a3b8', fontSize: 11 }}
-                    stroke="#475569"
+                    stroke="var(--color-slate-500)"
                   />
                   <YAxis
                     tick={{ fill: '#94a3b8', fontSize: 11 }}
-                    stroke="#475569"
+                    stroke="var(--color-slate-500)"
                     width={52}
                     domain={['auto', 'auto']}
                     unit=" кг"
@@ -277,26 +277,26 @@ export function StatsPage({ exercises }: StatsPageProps) {
         </div>
 
         {/* ---------- Карточка 3: объём по группам мышц за месяц ---------- */}
-        <div className="rounded-2xl border border-slate-700 bg-slate-800 p-4">
+        <div className="rounded-2xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-4">
           <h2 className="font-semibold">Объём по группам мышц (последний месяц)</h2>
           {groupVolumePoints.length === 0 ? (
-            <p className="mt-4 rounded-xl border border-dashed border-slate-600 p-4 text-center text-sm text-slate-400">
+            <p className="mt-4 rounded-xl border border-dashed border-slate-300 dark:border-slate-600 p-4 text-center text-sm text-slate-500 dark:text-slate-400">
               За последние 30 дней не было завершённых подходов.
             </p>
           ) : (
             <div className="mt-4 h-56 w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={groupVolumePoints} margin={{ top: 5, right: 8, bottom: 0, left: -18 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#334155" vertical={false} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--color-slate-700)" vertical={false} />
                   <XAxis
                     dataKey="name"
                     tick={{ fill: '#94a3b8', fontSize: 11 }}
-                    stroke="#475569"
+                    stroke="var(--color-slate-500)"
                     interval={0}
                   />
                   <YAxis
                     tick={{ fill: '#94a3b8', fontSize: 11 }}
-                    stroke="#475569"
+                    stroke="var(--color-slate-500)"
                     width={52}
                     unit=" т"
                   />
@@ -318,11 +318,11 @@ export function StatsPage({ exercises }: StatsPageProps) {
           )}
           {/* Текстовая таблица объёмов — доступная альтернатива графику */}
           {groupVolumePoints.length > 0 && (
-            <ul className="mt-3 space-y-1 text-sm text-slate-300">
+            <ul className="mt-3 space-y-1 text-sm text-slate-700 dark:text-slate-300">
               {groupVolumePoints.map((point) => (
                 <li key={point.muscleGroup} className="flex justify-between">
                   <span>{point.name}</span>
-                  <span className="tabular-nums text-slate-400">{formatVolume(point.volume)}</span>
+                  <span className="tabular-nums text-slate-500 dark:text-slate-400">{formatVolume(point.volume)}</span>
                 </li>
               ))}
             </ul>
