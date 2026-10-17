@@ -6,6 +6,7 @@ import { getSafeExercises } from '../utils/exerciseFilter';
 import { mockExercises } from '../data/mockExercises';
 import { Toggle } from '../components/ui/Toggle';
 import { ThemeToggle } from '../components/ui/ThemeToggle';
+import { useThemeStore } from '../stores/themeStore';
 import { subscribeForPush, unsubscribeFromPush } from '../services/pushService';
 
 /** Описание одного toggle-переключателя травмы. */
@@ -38,6 +39,7 @@ const MIN_REST_SEC = 15;
  */
 export function SettingsPage() {
   const profile = useUserStore((state) => state.profile);
+  const theme = useThemeStore((state) => state.theme);
   const updateProfile = useUserStore((state) => state.updateProfile);
 
   // Черновик формы: инициализируется из сохранённого профиля.
@@ -123,16 +125,28 @@ export function SettingsPage() {
 
   return (
     <main className="min-h-screen bg-white pb-32 text-slate-900 dark:bg-slate-900 dark:text-slate-100">
-      <header className="flex items-start justify-between gap-4 border-b border-slate-200 px-4 py-6 dark:border-slate-800">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Настройки</h1>
-          <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">Профиль, ограничения и параметры тренировки</p>
-        </div>
-        {/* Переключатель темы день/ночь */}
-        <ThemeToggle />
+      <header className="border-b border-slate-200 px-4 py-6 dark:border-slate-800">
+        <h1 className="text-2xl font-bold tracking-tight">Настройки</h1>
+        <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">Профиль, ограничения и параметры тренировки</p>
       </header>
 
       <form onSubmit={handleSubmit} className="mx-auto max-w-lg space-y-4 px-4 py-6">
+        {/* Карточка: внешний вид (переключение темы день/ночь) */}
+        <section
+          aria-label="Внешний вид"
+          className="flex items-center justify-between gap-4 rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-800/60"
+        >
+          <div>
+            <h2 className="mb-1 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+              Внешний вид
+            </h2>
+            <p className="text-sm text-slate-600 dark:text-slate-400">
+              {theme === 'dark' ? 'Тёмная тема' : 'Светлая тема'} — выбор сохраняется автоматически
+            </p>
+          </div>
+          <ThemeToggle />
+        </section>
+
         {/* Карточка: основные параметры */}
         <section className="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-800/60">
           <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
