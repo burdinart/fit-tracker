@@ -37,8 +37,8 @@ export function SessionDetail({ session, exercises, units, onOpenExerciseStats }
   return (
     <div className="space-y-4">
       {/* Шапка сессии: дата + сводка */}
-      <div className="rounded-xl border border-slate-700 bg-slate-900/60 px-4 py-3">
-        <p className="text-sm text-slate-400">
+      <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-3">
+        <p className="text-sm text-slate-600 dark:text-slate-400">
           {new Date(session.date).toLocaleString('ru-RU', {
             day: 'numeric',
             month: 'long',
@@ -47,13 +47,13 @@ export function SessionDetail({ session, exercises, units, onOpenExerciseStats }
             minute: '2-digit',
           })}
         </p>
-        <p className="mt-1 text-xs text-slate-500">
+        <p className="mt-1 text-xs text-slate-400 dark:text-slate-500">
           Упражнений: {session.exercises.length} · Подходов выполнено: {countCompletedSets(session)}
         </p>
       </div>
 
       {session.exercises.length === 0 && (
-        <p className="rounded-xl border border-dashed border-slate-700 p-4 text-center text-sm text-slate-400">
+        <p className="rounded-xl border border-dashed border-slate-300 dark:border-slate-600 p-4 text-center text-sm text-slate-600 dark:text-slate-400">
           В этой тренировке не было упражнений.
         </p>
       )}
@@ -65,15 +65,15 @@ export function SessionDetail({ session, exercises, units, onOpenExerciseStats }
         return (
           <article
             key={workoutExercise.exerciseId}
-            className="rounded-xl border border-slate-700 bg-slate-900/60 p-4"
+            className="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-700 p-4"
           >
             <header className="mb-2 flex items-baseline justify-between gap-2">
               <div className="min-w-0">
-                <h4 className="truncate font-semibold">
+                <h4 className="truncate font-semibold text-slate-900 dark:text-slate-100">
                   {exercise?.name ?? workoutExercise.exerciseId}
                 </h4>
                 {exercise !== undefined && (
-                  <p className="text-xs text-slate-400">{muscleGroupLabels[exercise.muscleGroup]}</p>
+                  <p className="text-xs text-slate-600 dark:text-slate-400">{muscleGroupLabels[exercise.muscleGroup]}</p>
                 )}
               </div>
               <div className="flex shrink-0 items-center gap-1.5">
@@ -82,7 +82,7 @@ export function SessionDetail({ session, exercises, units, onOpenExerciseStats }
                   <button
                     type="button"
                     onClick={() => onOpenExerciseStats(workoutExercise.exerciseId)}
-                    className="rounded-lg px-1.5 py-1 text-base text-slate-400 transition hover:bg-slate-700 hover:text-emerald-600 dark:text-emerald-400"
+                    className="rounded-lg px-1.5 py-1 text-base text-slate-600 dark:text-slate-400 transition hover:bg-slate-200 dark:hover:bg-slate-600 hover:text-emerald-600 dark:hover:text-emerald-400"
                     aria-label={`Статистика упражнения ${exercise?.name ?? workoutExercise.exerciseId}`}
                     title="Статистика"
                   >
@@ -90,32 +90,32 @@ export function SessionDetail({ session, exercises, units, onOpenExerciseStats }
                   </button>
                 )}
                 {/* Расчётный 1ПМ упражнения в этой тренировке */}
-                <p className="rounded-lg bg-indigo-950/80 px-2.5 py-1 text-right text-xs font-semibold text-indigo-700 dark:text-indigo-300">
+                <p className="rounded-lg bg-blue-100 dark:bg-blue-900/30 px-2.5 py-1 text-right text-xs font-semibold text-blue-700 dark:text-blue-400">
                   1ПМ ≈ {best1RM > 0 ? formatWeight(best1RM, units) : '—'}
                 </p>
               </div>
             </header>
 
-            <ul className="divide-y divide-slate-800 text-sm">
+            <ul className="divide-y divide-slate-200 dark:divide-slate-600 text-sm">
               {workoutExercise.sets.map((workoutSet, index) => (
                 <li
                   key={workoutSet.id}
                   className="flex items-center justify-between py-1.5 tabular-nums"
                 >
-                  <span className="text-slate-400">Подход {index + 1}</span>
-                  <span className={workoutSet.isCompleted ? 'text-slate-100' : 'text-slate-500 line-through'}>
+                  <span className="text-slate-600 dark:text-slate-400">Подход {index + 1}</span>
+                  <span className={workoutSet.isCompleted ? 'font-medium text-slate-900 dark:text-slate-100' : 'text-slate-400 dark:text-slate-500 line-through'}>
                     {formatWeight(workoutSet.weight, units)} × {workoutSet.reps}
                     {workoutSet.rpe !== undefined && (
-                      <span className="ml-2 text-xs text-slate-500">RPE {workoutSet.rpe}</span>
+                      <span className="ml-2 text-xs text-slate-400 dark:text-slate-500">RPE {workoutSet.rpe}</span>
                     )}
-                    {workoutSet.isCompleted && <span className="ml-2 text-emerald-600 dark:text-emerald-400">✓</span>}
+                    {workoutSet.isCompleted && <span className="ml-2 text-green-600 dark:text-green-400">✓</span>}
                   </span>
                 </li>
               ))}
             </ul>
 
             {workoutExercise.notes !== undefined && workoutExercise.notes !== '' && (
-              <p className="mt-2 rounded-lg bg-slate-100 px-3 py-2 text-xs italic text-slate-600 dark:bg-slate-800 dark:text-slate-400">
+              <p className="mt-2 rounded-lg bg-white dark:bg-slate-800 px-3 py-2 text-xs italic text-slate-600 dark:text-slate-400">
                 📝 {workoutExercise.notes}
               </p>
             )}

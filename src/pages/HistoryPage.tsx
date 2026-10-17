@@ -137,17 +137,17 @@ export function HistoryPage({ exercises, onOpenExerciseStats }: HistoryPageProps
           onClick={() => setOpenSessionId(null)}
         >
           <div
-            className="max-h-[85vh] w-full max-w-md overflow-y-auto rounded-2xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-5"
+            className="max-h-[85vh] w-full max-w-md overflow-y-auto rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-5 shadow-2xl"
             onClick={(event) => event.stopPropagation()}
           >
             <div className="mb-4 flex items-start justify-between gap-2">
-              <h2 id="session-detail-title" className="text-lg font-bold">
+              <h2 id="session-detail-title" className="text-lg font-bold text-slate-900 dark:text-slate-100">
                 Детали тренировки
               </h2>
               <button
                 type="button"
                 onClick={() => setOpenSessionId(null)}
-                className="min-h-[44px] min-w-[44px] rounded-lg text-xl text-slate-500 dark:text-slate-400 transition hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-slate-900 dark:text-slate-100"
+                className="min-h-[44px] min-w-[44px] rounded-lg text-xl text-slate-600 dark:text-slate-400 transition hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-100"
                 aria-label="Закрыть"
               >
                 ✕
@@ -176,7 +176,7 @@ export function HistoryPage({ exercises, onOpenExerciseStats }: HistoryPageProps
                 deleteSession(openSession.id);
                 setOpenSessionId(null);
               }}
-              className="mt-4 min-h-[48px] w-full rounded-xl border border-rose-500/60 text-sm font-semibold text-rose-600 dark:text-rose-400 transition hover:bg-rose-950/50"
+              className="mt-4 min-h-[48px] w-full rounded-xl border border-red-300 dark:border-red-700 text-sm font-semibold text-red-600 dark:text-red-400 transition hover:bg-red-50 dark:hover:bg-red-900/20"
             >
               🗑 Удалить тренировку из истории
             </button>

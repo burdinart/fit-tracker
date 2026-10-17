@@ -32,7 +32,7 @@ export function InjuryWarning({ exercise, injuries, allExercises }: InjuryWarnin
   return (
     <div
       role="alert"
-      className="rounded-xl border border-rose-500/60 bg-rose-950/60 px-3 py-2.5 text-sm"
+      className="rounded-xl border border-red-300 bg-red-50 dark:border-red-800 dark:bg-red-950/60 px-3 py-2.5 text-sm"
     >
       <p className="flex items-start gap-2 font-medium text-rose-700 dark:text-rose-300">
         <span aria-hidden="true" className="shrink-0">⚠️</span>
